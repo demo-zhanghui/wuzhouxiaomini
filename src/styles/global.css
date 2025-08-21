@@ -1,0 +1,268 @@
+/**
+ * 全局样式文件
+ * 定义整个应用的基础样式和主题色彩
+ */
+
+/* 重置默认样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 全局字体和基础样式 */
+html {
+  font-size: 14px; /* 基础字体大小 */
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  background-color: #f7f8fa;
+  color: #323233;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 移动端APP容器 */
+#app {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f7f8fa;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 主题色彩变量 */
+:root {
+  --primary-color: #1989fa;
+  --success-color: #07c160;
+  --warning-color: #ff976a;
+  --danger-color: #ee0a24;
+  --text-color: #323233;
+  --text-color-2: #646566;
+  --text-color-3: #969799;
+  --background-color: #f7f8fa;
+  --background-color-light: #fafafa;
+  --border-color: #ebedf0;
+}
+
+/* 页面容器样式 */
+.page-container {
+  min-height: 100vh;
+  background-color: var(--background-color);
+}
+
+/* 内容区域样式（考虑底部导航栏高度） */
+.content-container {
+  padding-bottom: 60px; /* 为底部导航栏预留空间 */
+  min-height: calc(100vh - 60px);
+}
+
+/* 通用卡片样式 */
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 数据展示卡片 */
+.data-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 20px 16px;
+  margin: 16px;
+}
+
+.data-card .data-item {
+  text-align: center;
+}
+
+.data-card .data-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.data-card .data-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 列表项样式 */
+.list-item {
+  background: white;
+  border-radius: 8px;
+  margin: 8px 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 按钮样式增强 */
+.primary-button {
+  background: linear-gradient(135deg, var(--primary-color), #4facfe);
+  border: none;
+  border-radius: 24px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(25, 137, 250, 0.3);
+}
+
+/* 中心按钮特殊样式 */
+.center-button {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+  box-shadow: 0 6px 20px rgba(238, 90, 36, 0.4) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 24px !important;
+  color: white !important;
+  border: 3px solid white !important;
+  position: relative !important;
+  top: -8px !important;
+}
+
+.center-button::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: inherit;
+  filter: blur(10px);
+  opacity: 0.6;
+  z-index: -1;
+}
+
+/* 工作台模态层样式 */
+.workbench-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+}
+
+.workbench-content {
+  width: 100%;
+  max-height: 90vh;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.workbench-modal.show .workbench-content {
+  transform: translateY(0);
+}
+
+/* 任务卡片样式 */
+.task-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 32px 24px;
+  margin: 20px 0;
+  color: white;
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.task-card-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.task-card-content {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* 移动端视口设置 */
+@viewport {
+  width: device-width;
+  zoom: 1.0;
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  html {
+    font-size: 13px;
+  }
+  
+  #app {
+    max-width: 375px;
+  }
+  
+  .card {
+    margin: 8px 12px;
+    padding: 12px;
+  }
+  
+  .data-card {
+    margin: 12px;
+    padding: 16px 12px;
+  }
+}
+
+@media (min-width: 376px) and (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+  
+  #app {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+/* 大屏设备上全屏显示 */
+@media (min-width: 768px) {
+  body {
+    padding: 0;
+    margin: 0;
+  }
+  
+  #app {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    min-height: 100vh;
+    border-radius: 0;
+    overflow: hidden;
+  }
+}
+
+/* 安全区域适配 */
+@supports (padding: max(0px)) {
+  .van-tabbar {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
