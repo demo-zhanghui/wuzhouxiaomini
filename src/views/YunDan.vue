@@ -36,7 +36,7 @@
       >
         <!-- 卡片头部 -->
         <div class="card-header">
-          <div class="order-number">运单号 {{ order.number }}</div>
+          <div class="order-number" @click="goDetail(order)" style="cursor: pointer; color: #1989fa;">运单号 {{ order.number }}</div>
           <van-tag :type="getStatusTagType(order.status)" round size="medium" class="status-tag">
             {{ tabs.find(t => t.value === order.status)?.title || order.status }}
           </van-tag>
@@ -71,7 +71,7 @@
             v-for="action in getActionButtons(order.status)"
             :key="action.key"
             class="action-item"
-            @click="handleAction(action.key, order)"
+            @click.stop="handleAction(action.key, order)"
           >
             <van-icon :name="action.icon" :class="['action-icon', action.class]" />
             <div class="action-text">{{ action.text }}</div>
@@ -271,7 +271,8 @@ const handleAction = async (actionKey, order) => {
       break
     
     case 'load':
-      showToast('开始装货')
+      // 跳转到装货详情页面
+      router.push(`/main/loading/${order.id}`)
       break
     
     case 'report':
@@ -283,7 +284,8 @@ const handleAction = async (actionKey, order) => {
       break
     
     case 'unload':
-      showToast('开始卸货')
+      // 跳转到卸货详情页面
+      router.push(`/main/unloading/${order.id}`)
       break
     
     case 'upload':
@@ -295,7 +297,7 @@ const handleAction = async (actionKey, order) => {
       break
     
     case 'detail':
-      showToast('查看详情')
+      goDetail(order)
       break
     
     default:
@@ -306,6 +308,12 @@ const handleAction = async (actionKey, order) => {
 // 返回上一页
 const goBack = () => {
   router.back()
+}
+
+// 跳转详情
+const goDetail = (order) => {
+  const mode = (localStorage.getItem('userRole') === 'shipOwner') ? 'water' : 'road'
+  router.push({ name: 'WaybillDetail', params: { id: order.id }, query: { mode } })
 }
 
 // 显示筛选器

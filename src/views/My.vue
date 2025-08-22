@@ -107,7 +107,22 @@
         </div>
         
         <div class="related-item" @click="handleVehicleManage">
-          <van-icon :name="getVehicleIcon()" size="24" class="related-icon" />
+          <template v-if="store.userRole === 'shipOwner'">
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              class="related-icon"
+              aria-hidden="true"
+            >
+              <path d="M3 15h18l-2 6H5l-2-6z" fill="currentColor"/>
+              <path d="M12 3l4 2v6h-4V3z" fill="currentColor" opacity=".9"/>
+              <path d="M8 11V7l4-2v6H8z" fill="currentColor" opacity=".7"/>
+            </svg>
+          </template>
+          <template v-else>
+            <van-icon name="logistics" size="24" class="related-icon" />
+          </template>
           <span class="related-text">{{ getVehicleLabelText() }}</span>
         </div>
         
@@ -118,7 +133,7 @@
         
         <div class="related-item" @click="handleQRCode">
           <van-icon name="qr" size="24" class="related-icon" />
-          <span class="related-text">我的码买</span>
+          <span class="related-text">我的码夹</span>
         </div>
       </div>
     </div>
@@ -126,26 +141,6 @@
     <!-- 功能列表区 -->
     <div class="function-card">
       <van-cell-group inset>
-        <!-- 入场预约记录 - 仅司机角色显示 -->
-        <van-cell 
-          v-if="store.userRole === 'driver'"
-          is-link
-          @click="handleEntryRecord"
-          class="function-cell"
-        >
-          <template #icon>
-            <div class="cell-icon-wrapper">
-              <van-icon name="calendar-o" size="18" class="cell-icon" />
-            </div>
-          </template>
-          <template #title>
-            <div class="cell-title">入场预约记录</div>
-          </template>
-          <template #label>
-            <div class="cell-subtitle">入场提货单据</div>
-          </template>
-        </van-cell>
-        
         <!-- 异常报备 - 所有角色通用 -->
         <van-cell 
           is-link
@@ -164,7 +159,62 @@
             <div class="cell-subtitle">查看上报异常</div>
           </template>
         </van-cell>
+
+        <!-- 入场预约记录 -->
+        <van-cell 
+          is-link
+          @click="handleEntryRecord"
+          class="function-cell"
+        >
+          <template #icon>
+            <div class="cell-icon-wrapper">
+              <van-icon name="calendar-o" size="18" class="cell-icon" />
+            </div>
+          </template>
+          <template #title>
+            <div class="cell-title">入场预约记录</div>
+          </template>
+          <template #label>
+            <div class="cell-subtitle">入场提货单据</div>
+          </template>
+        </van-cell>
+
+        <!-- 进城申请记录 -->
+        <van-cell 
+          is-link
+          @click="handleCityApplicationRecord"
+          class="function-cell"
+        >
+          <template #icon>
+            <div class="cell-icon-wrapper">
+              <van-icon name="todo-list-o" size="18" class="cell-icon" />
+            </div>
+          </template>
+          <template #title>
+            <div class="cell-title">进城申请记录</div>
+          </template>
+          <template #label>
+            <div class="cell-subtitle">城市通行申请</div>
+          </template>
+        </van-cell>
       </van-cell-group>
+    </div>
+
+    <!-- 其他相关 -->
+    <div class="other-card">
+      <div class="card-title">其他相关</div>
+      <div class="other-row">
+        <div class="other-item" @click="handleHelpFeedback">
+          <van-icon name="comment-o" size="24" class="other-icon" />
+          <div class="other-title">评价与反馈</div>
+          <div class="other-subtitle">意见反馈</div>
+        </div>
+        <div class="other-item" @click="handleHotline">
+          <van-icon name="phone-o" size="24" class="other-icon" />
+          <div class="other-title">客服热线</div>
+          <div class="other-subtitle">400-500-5689</div>
+        </div>
+      </div>
     </div>
 
     <!-- 角色切换动作面板 -->
@@ -317,7 +367,7 @@ const handleOrderStatus = (status) => {
  * 处理运单更多点击
  */
 const handleOrderMore = () => {
-  showToast('更多运单功能（Demo版本）')
+  router.push('/main/yundan')
 }
 
 /**
@@ -331,7 +381,7 @@ const handleFavorites = () => {
  * 处理我的码买
  */
 const handleQRCode = () => {
-  showToast('我的码买功能（Demo版本）')
+  showToast('我的码夹功能（Demo版本）')
 }
 
 /**
@@ -373,8 +423,11 @@ const handleOrderFilter = (filter) => {
  * 处理车辆/船舶管理
  */
 const handleVehicleManage = () => {
-  const label = getVehicleLabelText()
-  showToast(`${label}管理功能（Demo版本）`)
+  if (store.userRole === 'driver') {
+    router.push('/main/vehicle')
+  } else {
+    router.push('/main/ship')
+  }
 }
 
 /**
@@ -406,6 +459,13 @@ const handleEntryRecord = () => {
 }
 
 /**
+ * 处理进城申请记录
+ */
+const handleCityApplicationRecord = () => {
+  showToast('进城申请记录功能（Demo版本）')
+}
+
+/**
  * 处理过磅记录（仅司机角色）
  */
 const handleWeighingRecord = () => {
@@ -423,7 +483,7 @@ const handleIncomeRecord = () => {
  * 处理异常报备
  */
 const handleExceptionReport = () => {
-  showToast('异常报备功能（Demo版本）')
+  router.push('/main/exception')
 }
 
 /**
@@ -438,6 +498,26 @@ const handleServiceCenter = () => {
  */
 const handleHelpFeedback = () => {
   showToast('帮助反馈功能（Demo版本）')
+}
+
+/**
+ * 处理客服热线
+ */
+const handleHotline = () => {
+  showConfirmDialog({
+    title: '联系客服',
+    message: '拨打客服热线：400-500-5689',
+    confirmButtonText: '拨打',
+    cancelButtonText: '取消'
+  })
+    .then(() => {
+      try {
+        window.location.href = 'tel:4005005689'
+      } catch (e) {
+        showToast('请在手机设备上拨打：400-500-5689')
+      }
+    })
+    .catch(() => {})
 }
 
 
@@ -465,7 +545,8 @@ onMounted(() => {
 .profile-card,
 .order-center-card,
 .related-card,
-.function-card {
+.function-card,
+.other-card {
   background-color: #ffffff;
   border-radius: 12px;
   margin: 12px;
@@ -718,6 +799,40 @@ onMounted(() => {
 
 .cell-subtitle {
   font-size: 13px;
+  color: #969799;
+  margin-top: 2px;
+}
+
+/* 其他相关样式 */
+.other-row {
+  display: flex;
+  gap: 12px;
+}
+
+.other-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.other-icon {
+  color: #1989fa;
+  margin-bottom: 8px;
+}
+
+.other-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #323233;
+}
+
+.other-subtitle {
+  font-size: 12px;
   color: #969799;
   margin-top: 2px;
 }

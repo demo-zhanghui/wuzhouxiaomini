@@ -24,62 +24,31 @@
 
       <!-- 底部导航栏 -->
       <van-tabbar 
+        v-if="!route.meta.hideTabbar"
         v-model="activeTab" 
         @change="handleTabChange"
         class="custom-tabbar"
       >
-      <!-- 找货 -->
-      <van-tabbar-item name="zhaohuo" icon="search">
-        找货
-      </van-tabbar-item>
-
-      <!-- 跑货 -->
-      <van-tabbar-item name="paohuo" icon="logistics">
-        跑货
-      </van-tabbar-item>
-
-      <!-- 中心按钮 -->
-      <van-tabbar-item name="workbench" class="center-tab-item">
-        <template #icon>
-          <div class="center-button" @click.stop="showWorkbench">
-            <van-icon name="apps-o" size="24" />
-          </div>
-        </template>
-        <!-- 去除中间按钮的文字展示 -->
-        <span class="center-label" style="display:none;">工作台</span>
-      </van-tabbar-item>
-
-      <!-- 运单 -->
-      <van-tabbar-item name="yunying" icon="notes-o">
+      <!-- 运单（左） -->
+      <van-tabbar-item name="yundan" icon="notes-o">
         运单
       </van-tabbar-item>
 
-      <!-- 我的 -->
+      <!-- 中心按钮：首页（跑货） -->
+      <van-tabbar-item name="paohuo" class="center-tab-item">
+        <template #icon>
+          <div class="center-button">
+            <van-icon name="home-o" size="24" />
+          </div>
+        </template>
+        <span class="center-label">首页</span>
+      </van-tabbar-item>
+
+      <!-- 我的（右） -->
       <van-tabbar-item name="my" icon="user-o">
         我的
       </van-tabbar-item>
     </van-tabbar>
-
-    <!-- 工作台模态弹窗 -->
-    <transition name="modal-slide">
-      <div v-if="isWorkbenchVisible" class="workbench-modal" @click="hideWorkbench">
-        <div class="workbench-content" @click.stop>
-          <!-- 拖拽指示器 -->
-          <div class="drag-indicator"></div>
-          
-          <!-- 工作台标题 -->
-          <div class="workbench-header">
-            <h2 class="workbench-title">情境感知工作台</h2>
-            <p class="workbench-subtitle">专注执行，高效作业</p>
-          </div>
-
-          <!-- 工作台内容 -->
-          <div class="workbench-body">
-            <Workbench @close="hideWorkbench" />
-          </div>
-        </div>
-      </div>
-    </transition>
     </div>
   </div>
 </template>
@@ -90,9 +59,8 @@
  * 处理导航切换、工作台弹窗等功能
  */
 
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import Workbench from './Workbench.vue'
 
 // 路由实例
 const router = useRouter()
@@ -100,7 +68,6 @@ const route = useRoute()
 
 // 响应式数据
 const activeTab = ref('paohuo')           // 当前激活的标签页
-const isWorkbenchVisible = ref(false)    // 工作台是否可见
 
 /**
  * 根据当前路由设置激活的标签页
@@ -108,9 +75,8 @@ const isWorkbenchVisible = ref(false)    // 工作台是否可见
 const setActiveTabFromRoute = () => {
   const routeName = route.name
   const tabMap = {
-    'ZhaoHuo': 'zhaohuo',
     'Paohuo': 'paohuo',
-    'Yunying': 'yunying',
+    'YunDan': 'yundan',
     'My': 'my'
   }
   
@@ -124,40 +90,16 @@ const setActiveTabFromRoute = () => {
  * @param {string} name - 标签页名称
  */
 const handleTabChange = (name) => {
-  // 中心按钮特殊处理，不进行路由跳转
-  if (name === 'workbench') {
-    return
-  }
-  
   // 根据标签页名称跳转对应路由
   const routeMap = {
-    'zhaohuo': '/main/zhaohuo',
     'paohuo': '/main/paohuo',
-    'yunying': '/main/yunying',
+    'yundan': '/main/yundan',
     'my': '/main/my'
   }
   
   if (routeMap[name]) {
     router.push(routeMap[name])
   }
-}
-
-/**
- * 显示工作台
- */
-const showWorkbench = () => {
-  isWorkbenchVisible.value = true
-  // 防止背景滚动
-  document.body.style.overflow = 'hidden'
-}
-
-/**
- * 隐藏工作台
- */
-const hideWorkbench = () => {
-  isWorkbenchVisible.value = false
-  // 恢复背景滚动
-  document.body.style.overflow = 'auto'
 }
 
 /**

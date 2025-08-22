@@ -83,14 +83,36 @@ export const driverData = {
       id: 'V001',
       plateNumber: '京A12345',
       vehicleType: '厢式货车',
-      loadCapacity: '10吨',
+      loadCapacity: '40 吨',
+      vin: 'LVSF665443233625655',
+      transportLicense: '875665443233625655',
       status: 'active'
     },
     {
       id: 'V002',
       plateNumber: '京A67890',
       vehicleType: '平板货车',
-      loadCapacity: '15吨',
+      loadCapacity: '40 吨',
+      vin: 'LVSF665443233625655',
+      transportLicense: '875665443233625655',
+      status: 'active'
+    },
+    {
+      id: 'V003',
+      plateNumber: '冀B76543',
+      vehicleType: '自卸货车',
+      loadCapacity: '40 吨',
+      vin: 'LVSF665443233625655',
+      transportLicense: '875665443233625655',
+      status: 'active'
+    },
+    {
+      id: 'V004',
+      plateNumber: '鲁C88990',
+      vehicleType: '牵引车',
+      loadCapacity: '40 吨',
+      vin: 'LVSF665443233625655',
+      transportLicense: '875665443233625655',
       status: 'active'
     }
   ]
@@ -170,6 +192,9 @@ export const shipOwnerData = {
       shipName: '鲁海运001',
       shipType: '集装箱船',
       loadCapacity: '500TEU',
+      mmsi: '412345678',
+      shipIdentification: 'CN-SHID-0001',
+      businessTransportLicense: 'BZ-2024-0001',
       status: 'active'
     },
     {
@@ -177,6 +202,9 @@ export const shipOwnerData = {
       shipName: '鲁海运002',
       shipType: '散货船',
       loadCapacity: '5000吨',
+      mmsi: '412345679',
+      shipIdentification: 'CN-SHID-0002',
+      businessTransportLicense: 'BZ-2024-0002',
       status: 'active'
     }
   ]
@@ -332,6 +360,6 @@ export function getTransportLabel(role) {
 export function getVehicleLabel(role) {
   return {
     label: role === 'driver' ? '我的车辆' : '我的船舶',
-    icon: role === 'driver' ? 'logistics' : 'gem-o'
+    icon: role === 'driver' ? 'logistics' : 'ship'
   }
 }

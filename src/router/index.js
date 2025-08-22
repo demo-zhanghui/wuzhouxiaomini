@@ -9,10 +9,15 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Layout from '@/views/Layout.vue'
 import Paohuo from '@/views/Paohuo.vue'
-import ZhaoHuo from '@/views/ZhaoHuo.vue'
 
 import YunDan from '@/views/YunDan.vue'
 import My from '@/views/My.vue'
+import VehicleManage from '@/views/VehicleManage.vue'
+import ShipManage from '@/views/ShipManage.vue'
+import ExceptionReport from '@/views/ExceptionReport.vue'
+import YunDanDetail from '@/views/YunDanDetail.vue'
+import LoadingDetail from '@/views/LoadingDetail.vue'
+import UnloadingDetail from '@/views/UnloadingDetail.vue'
 
 /**
  * 路由配置数组
@@ -48,21 +53,21 @@ const routes = [
         }
       },
       {
-        path: 'zhaohuo',
-        name: 'ZhaoHuo',
-        component: ZhaoHuo,
-        meta: {
-          title: '找货',
-          tabbarIndex: 0
-        }
-      },
-      {
-        path: 'yunying',
-        name: 'Yunying',
+        path: 'yundan',
+        name: 'YunDan',
         component: YunDan,
         meta: {
           title: '运单',
           tabbarIndex: 3
+        }
+      },
+      {
+        path: 'waybill/:id',
+        name: 'WaybillDetail',
+        component: YunDanDetail,
+        meta: {
+          title: '运单详情',
+          hideTabbar: true
         }
       },
       {
@@ -72,6 +77,51 @@ const routes = [
         meta: {
           title: '我的',
           tabbarIndex: 4
+        }
+      },
+      {
+        path: 'vehicle',
+        name: 'VehicleManage',
+        component: VehicleManage,
+        meta: {
+          title: '车辆管理',
+          hideTabbar: true
+        }
+      },
+      {
+        path: 'ship',
+        name: 'ShipManage',
+        component: ShipManage,
+        meta: {
+          title: '船舶管理',
+          hideTabbar: true
+        }
+      },
+      {
+        path: 'exception',
+        name: 'ExceptionReport',
+        component: ExceptionReport,
+        meta: {
+          title: '异常报备',
+          hideTabbar: true
+        }
+      },
+      {
+        path: 'loading/:id',
+        name: 'LoadingDetail',
+        component: LoadingDetail,
+        meta: {
+          title: '装货详情',
+          hideTabbar: true
+        }
+      },
+      {
+        path: 'unloading/:id',
+        name: 'UnloadingDetail',
+        component: UnloadingDetail,
+        meta: {
+          title: '卸货详情',
+          hideTabbar: true
         }
       }
     ]

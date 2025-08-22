@@ -142,11 +142,15 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { showToast, showImagePreview } from 'vant'
 import { workbenchStates } from '@/data/mockData'
 
 // 仅用于父组件关闭，因此无需显式导入 defineEmits 宏
 const emit = defineEmits(['close'])
+
+// 路由
+const router = useRouter()
 
 // 响应式数据
 const currentStateIndex = ref(0)
@@ -248,7 +252,7 @@ const handleAction = (button) => {
     confirm_arrival: '确认到达（Demo版本）',
     scan_loading: '扫码装货（Demo版本）',
     upload_weight: '上传磅单（Demo版本）',
-    report_exception: '上报异常（Demo版本）',
+    report_exception: '上报异常',
     contact_dispatch: '联系调度（Demo版本）',
     scan_receipt: '扫码签收（Demo版本）',
     upload_receipt: '上传回单（Demo版本）',
@@ -258,10 +262,15 @@ const handleAction = (button) => {
   
   const message = actionMessages[button.action] || `执行操作：${button.text}`
   
-  showToast({
-    message,
-    duration: 2000
-  })
+  if (button.action === 'report_exception') {
+    router.push('/main/exception')
+    return
+  } else {
+    showToast({
+      message,
+      duration: 2000
+    })
+  }
 
   // 模拟某些操作完成后自动切换到下一状态
   if (['confirm_arrival', 'scan_loading', 'scan_receipt'].includes(button.action)) {
