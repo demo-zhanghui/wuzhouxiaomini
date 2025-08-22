@@ -10,124 +10,98 @@
 -->
 
 <template>
-  <div class="login-container">
-    <!-- 顶部Logo区域 -->
-    <div class="logo-section">
-      <div class="logo-icon">
-        🚛
-      </div>
-      <h1 class="app-title">承运商统一APP</h1>
-      <p class="app-subtitle">公路·水路·统一平台</p>
-    </div>
-
-    <!-- 登录表单区域 -->
-    <div class="form-section">
-      <van-form @submit="handleLogin">
-        <!-- 手机号输入框 -->
-        <van-field
-          v-model="formData.phone"
-          name="phone"
-          label="手机号"
-          placeholder="请输入手机号"
-          :rules="phoneRules"
-          left-icon="phone-o"
-          maxlength="11"
-          type="tel"
-        />
-
-        <!-- 验证码输入框 -->
-        <van-field
-          v-model="formData.code"
-          name="code"
-          label="验证码"
-          placeholder="请输入验证码"
-          :rules="codeRules"
-          left-icon="shield-o"
-          maxlength="6"
-          type="number"
-        >
-          <template #button>
-            <van-button
-              size="small"
-              type="primary"
-              :disabled="isCodeButtonDisabled"
-              @click="getVerificationCode"
-              class="code-button"
-            >
-              {{ codeButtonText }}
-            </van-button>
-          </template>
-        </van-field>
-
-        <!-- 【Demo核心】角色切换器 -->
-        <div class="role-selector">
-          <div class="role-title">
-            <van-icon name="user-o" />
-            <span>模拟登录角色</span>
+  <!-- 模拟手机容器，与公路司机页一致 -->
+  <div class="app-container">
+    <div class="layout-container">
+      <div class="login-container">
+        <!-- 顶部状态栏 -->
+        <div class="status-bar">
+          <span class="time">9:41</span>
+          <div class="status-icons">
+            <van-icon name="signal" size="16" />
+            <van-icon name="wifi" size="16" />
+            <van-icon name="battery-full" size="16" />
           </div>
-          <van-radio-group v-model="selectedRole" direction="horizontal">
-            <van-radio name="driver" class="role-radio">
-              <template #icon="props">
-                <div class="role-option" :class="{ active: props.checked }">
-                  <van-icon name="logistics" size="20" />
-                  <span>公路司机</span>
-                </div>
-              </template>
-            </van-radio>
-            <van-radio name="shipOwner" class="role-radio">
-              <template #icon="props">
-                <div class="role-option" :class="{ active: props.checked }">
-                  <van-icon name="gem-o" size="20" />
-                  <span>水路船东</span>
-                </div>
-              </template>
-            </van-radio>
-          </van-radio-group>
         </div>
 
-        <!-- 登录按钮 -->
-        <div class="submit-section">
-          <van-button
-            round
-            block
-            type="primary"
-            native-type="submit"
-            :loading="isLoading"
-            class="login-button"
-          >
-            {{ isLoading ? '登录中...' : '登录/注册' }}
-          </van-button>
+        <!-- 顶部Logo区域 -->
+        <div class="logo-section">
+          <div class="logo-icon">🚛</div>
+          <h1 class="app-title">智慧梧州港物流信息平台</h1>
+          <p class="app-subtitle">公路·水路·统一平台</p>
         </div>
-      </van-form>
 
-      <!-- 服务协议 -->
-      <div class="agreement-section">
-        <van-checkbox v-model="agreedToTerms" icon-size="14px">
-          <span class="agreement-text">
-            登录/注册即代表您已同意
-            <span class="agreement-link" @click="showAgreement('service')">《用户服务协议》</span>
-            和
-            <span class="agreement-link" @click="showAgreement('privacy')">《隐私政策》</span>
-          </span>
-        </van-checkbox>
+        <!-- 登录表单区域 -->
+        <div class="form-section">
+          <van-form @submit="handleLogin">
+            <!-- 账号输入框 -->
+            <van-field
+              v-model="formData.username"
+              name="username"
+              label="账号"
+              placeholder="请输入账号"
+              :rules="usernameRules"
+              left-icon="user-o"
+              maxlength="30"
+            />
+
+            <!-- 密码输入框 -->
+            <van-field
+              v-model="formData.password"
+              name="password"
+              label="密码"
+              placeholder="请输入密码"
+              :rules="passwordRules"
+              left-icon="lock"
+              type="password"
+              maxlength="32"
+            />
+
+            <!-- 登录按钮 -->
+            <div class="submit-section">
+              <van-button
+                round
+                block
+                type="primary"
+                native-type="submit"
+                :loading="isLoading"
+                class="login-button"
+              >
+                {{ isLoading ? '登录中...' : '登录' }}
+              </van-button>
+            </div>
+          </van-form>
+
+          <!-- 服务协议 -->
+          <div class="agreement-section">
+            <van-checkbox v-model="agreedToTerms" icon-size="14px">
+              <span class="agreement-text">
+                登录即代表您已同意
+                <span class="agreement-link" @click="showAgreement('service')">《用户服务协议》</span>
+                和
+                <span class="agreement-link" @click="showAgreement('privacy')">《隐私政策》</span>
+              </span>
+            </van-checkbox>
+          </div>
+        </div>
+
+        <!-- 协议弹窗 -->
+        <van-popup
+          v-model:show="showAgreementPopup"
+          position="bottom"
+          :style="{ height: '70%' }"
+          round
+          closeable
+        >
+          <div class="agreement-popup">
+            <h3 class="agreement-title">{{ currentAgreementTitle }}</h3>
+            <div class="agreement-content">
+              <p>{{ currentAgreementContent }}</p>
+            </div>
+          </div>
+        </van-popup>
       </div>
     </div>
-
-    <!-- 协议弹窗 -->
-    <van-popup
-      v-model:show="showAgreementPopup"
-      position="bottom"
-      :style="{ height: '70%' }"
-      round
-      closeable
-    >
-      <div class="agreement-popup">
-        <h3 class="agreement-title">{{ currentAgreementTitle }}</h3>
-        <div class="agreement-content">
-          <p>{{ currentAgreementContent }}</p>
-        </div>
-      </div>
-    </van-popup>
   </div>
 </template>
 
@@ -139,7 +113,7 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast, showDialog } from 'vant'
+import { showToast } from 'vant'
 import { store } from '@/store'
 
 // 路由实例
@@ -147,42 +121,31 @@ const router = useRouter()
 
 // 响应式数据定义
 const formData = ref({
-  phone: '',    // 手机号
-  code: ''      // 验证码
+  username: '',
+  password: ''
 })
 
-const selectedRole = ref('driver')        // 选中的角色，默认为司机
-const isLoading = ref(false)             // 登录加载状态
-const agreedToTerms = ref(true)          // 是否同意服务协议
-const countdown = ref(0)                 // 验证码倒计时
-const showAgreementPopup = ref(false)    // 显示协议弹窗
-const currentAgreementType = ref('')     // 当前显示的协议类型
+const isLoading = ref(false)
+const agreedToTerms = ref(true)
+const showAgreementPopup = ref(false)
+const currentAgreementType = ref('')
 
 /**
  * 表单验证规则
  */
-const phoneRules = [
-  { required: true, message: '请输入手机号' },
-  { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
+const usernameRules = [
+  { required: true, message: '请输入账号' }
 ]
 
-const codeRules = [
-  { required: true, message: '请输入验证码' },
-  { pattern: /^\d{6}$/, message: '请输入6位数字验证码' }
+const passwordRules = [
+  { required: true, message: '请输入密码' },
+  { pattern: /^.{6,}$/, message: '密码至少6位' }
 ]
 
 /**
  * 计算属性
  */
-// 验证码按钮是否禁用
-const isCodeButtonDisabled = computed(() => {
-  return countdown.value > 0 || !formData.value.phone || !/^1[3-9]\d{9}$/.test(formData.value.phone)
-})
-
-// 验证码按钮文本
-const codeButtonText = computed(() => {
-  return countdown.value > 0 ? `${countdown.value}秒后重试` : '获取验证码'
-})
+// 账号/密码登录无需验证码逻辑
 
 // 当前协议标题
 const currentAgreementTitle = computed(() => {
@@ -231,32 +194,10 @@ const currentAgreementContent = computed(() => {
   }
 })
 
-/**
- * 获取验证码
- * Demo版本：模拟倒计时，无需真实发送短信
- */
-const getVerificationCode = () => {
-  // 开始倒计时
-  countdown.value = 60
-  
-  // 倒计时逻辑
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) {
-      clearInterval(timer)
-    }
-  }, 1000)
-  
-  // 显示成功提示
-  showToast({
-    message: '验证码已发送（Demo版本：输入任意6位数字即可）',
-    duration: 3000
-  })
-}
+// 已移除验证码逻辑
 
 /**
- * 处理登录提交
- * Demo版本：简单验证后直接登录成功
+ * 处理登录提交（账号/密码）
  */
 const handleLogin = async () => {
   // 检查是否同意协议
@@ -270,27 +211,23 @@ const handleLogin = async () => {
   
   try {
     // 模拟网络请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Demo版本：任意6位数字都可以通过验证
-    if (formData.value.code.length === 6) {
-      // 设置用户角色到全局状态
-      store.setUserRole(selectedRole.value)
-      
-      // 显示登录成功提示
-      const roleText = selectedRole.value === 'driver' ? '公路司机' : '水路船东'
-      showToast({
-        message: `登录成功！当前角色：${roleText}`,
-        duration: 2000
-      })
-      
-      // 延迟跳转到主页
+    await new Promise(resolve => setTimeout(resolve, 1200))
+
+    // Demo规则：非空账号且密码≥6位即通过
+    if (formData.value.username && formData.value.password && formData.value.password.length >= 6) {
+      localStorage.setItem('isLoggedIn', 'true')
+      // 切换到企业空间
+      if (typeof store.switchWorkspace === 'function') {
+        store.switchWorkspace('enterprise')
+      } else if (typeof store.setCurrentWorkspace === 'function') {
+        store.setCurrentWorkspace('enterprise')
+      }
+      showToast({ message: '登录成功，进入企业端', duration: 1500 })
       setTimeout(() => {
-        router.replace('/main/paohuo')
-      }, 1000)
-      
+        router.replace('/enterprise/home')
+      }, 600)
     } else {
-      showToast('请输入正确的验证码')
+      showToast('账号或密码不正确')
     }
     
   } catch (error) {
@@ -314,11 +251,15 @@ const showAgreement = (type) => {
  * 组件挂载时的初始化
  */
 onMounted(() => {
-  // 如果已经登录，直接跳转到主页
-  if (localStorage.getItem('userRole')) {
-    router.replace('/main/paohuo')
+  // 已登录则进入企业端
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    if (typeof store.switchWorkspace === 'function') {
+      store.switchWorkspace('enterprise')
+    } else if (typeof store.setCurrentWorkspace === 'function') {
+      store.setCurrentWorkspace('enterprise')
+    }
+    router.replace('/enterprise/home')
   }
-  
   console.log('登录页面已加载')
 })
 </script>
@@ -327,12 +268,54 @@ onMounted(() => {
 /**
  * 登录页面样式
  */
-.login-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* 模拟手机外壳，与 Layout.vue 保持一致 */
+.app-container {
+  width: 100%;
+  height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.layout-container {
+  width: 100%;
+  max-width: 375px;
+  height: 100%;
+  max-height: 812px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 0 24px;
+  position: relative;
+  background-color: var(--background-color);
+}
+
+/* 登录容器 */
+.login-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 顶部状态栏（对标公路司机） */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.status-icons {
+  display: flex;
+  gap: 4px;
 }
 
 /* Logo区域样式 */
@@ -371,7 +354,7 @@ onMounted(() => {
   background: white;
   border-radius: 24px 24px 0 0;
   padding: 32px 24px 40px;
-  margin: 0 -24px -24px;
+  margin: 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -382,60 +365,7 @@ onMounted(() => {
   min-width: 80px;
 }
 
-/* 角色选择器样式 */
-.role-selector {
-  margin: 24px 0;
-  padding: 20px 16px;
-  background: #f8f9ff;
-  border-radius: 12px;
-  border: 1px solid #e8eaff;
-}
-
-.role-title {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #323233;
-}
-
-.role-title .van-icon {
-  margin-right: 6px;
-  color: var(--primary-color);
-}
-
-.role-radio {
-  flex: 1;
-  margin: 0;
-}
-
-.role-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 12px;
-  border-radius: 8px;
-  border: 2px solid #e8eaff;
-  background: white;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.role-option.active {
-  border-color: var(--primary-color);
-  background: #f0f8ff;
-  color: var(--primary-color);
-}
-
-.role-option .van-icon {
-  margin-bottom: 6px;
-}
-
-.role-option span {
-  font-size: 12px;
-  font-weight: 500;
-}
+/* 已移除角色切换器样式 */
 
 /* 登录按钮样式 */
 .submit-section {

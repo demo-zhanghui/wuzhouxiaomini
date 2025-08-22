@@ -1,32 +1,35 @@
 /**
  * 路由配置文件
  * 定义应用的所有路由规则和页面导航
+ * 支持个人空间和企业空间的动态切换
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
 
+// 导入布局组件
+import Layout from '@/views/Layout.vue'
+
 // 导入页面组件
 import Login from '@/views/Login.vue'
-import Layout from '@/views/Layout.vue'
-import Paohuo from '@/views/Paohuo.vue'
-
 import YunDan from '@/views/YunDan.vue'
+import Paohuo from '@/views/Paohuo.vue'
 import My from '@/views/My.vue'
-import VehicleManage from '@/views/VehicleManage.vue'
-import ShipManage from '@/views/ShipManage.vue'
-import ExceptionReport from '@/views/ExceptionReport.vue'
-import YunDanDetail from '@/views/YunDanDetail.vue'
-import LoadingDetail from '@/views/LoadingDetail.vue'
-import UnloadingDetail from '@/views/UnloadingDetail.vue'
+
+// 导入企业工作空间页面组件
+import EnterpriseHome from '@/views/enterprise/Home.vue'
+import EnterpriseTodo from '@/views/enterprise/Todo.vue'
+import EnterpriseWorkbench from '@/views/enterprise/Workbench.vue'
+import EnterpriseApps from '@/views/enterprise/Apps.vue'
+import EnterpriseMy from '@/views/enterprise/My.vue'
 
 /**
  * 路由配置数组
- * 每个路由对象包含路径、组件、元信息等配置
+ * 包含个人空间和企业空间的路由结构
  */
 const routes = [
   {
     path: '/',
-    redirect: '/main' // 默认重定向到APP主界面
+    redirect: '/login' // 默认进入登录页
   },
   {
     path: '/login',
@@ -34,40 +37,36 @@ const routes = [
     component: Login,
     meta: {
       title: '登录',
-      hideTabbar: true // 登录页不显示底部导航
+      hideLayout: true
     }
   },
+  
+  // 个人空间路由（司机/船东）
   {
     path: '/main',
-    name: 'Layout',
     component: Layout,
-    redirect: '/main/paohuo', // 默认显示跑货页
+    redirect: '/main/paohuo',
+    meta: {
+      workspace: 'personal',
+      title: '个人空间'
+    },
     children: [
-      {
-        path: 'paohuo',
-        name: 'Paohuo',
-        component: Paohuo,
-        meta: {
-          title: '跑货',
-          tabbarIndex: 1 // 对应底部导航的索引
-        }
-      },
       {
         path: 'yundan',
         name: 'YunDan',
         component: YunDan,
         meta: {
           title: '运单',
-          tabbarIndex: 3
+          workspace: 'personal'
         }
       },
       {
-        path: 'waybill/:id',
-        name: 'WaybillDetail',
-        component: YunDanDetail,
+        path: 'paohuo',
+        name: 'Paohuo',
+        component: Paohuo,
         meta: {
-          title: '运单详情',
-          hideTabbar: true
+          title: '跑货',
+          workspace: 'personal'
         }
       },
       {
@@ -76,52 +75,65 @@ const routes = [
         component: My,
         meta: {
           title: '我的',
-          tabbarIndex: 4
+          workspace: 'personal'
+        }
+      }
+    ]
+  },
+  
+  // 企业空间路由
+  {
+    path: '/enterprise',
+    component: Layout,
+    redirect: '/enterprise/home',
+    meta: {
+      workspace: 'enterprise',
+      title: '企业空间'
+    },
+    children: [
+      {
+        path: 'home',
+        name: 'EnterpriseHome',
+        component: EnterpriseHome,
+        meta: {
+          title: '首页',
+          workspace: 'enterprise'
         }
       },
       {
-        path: 'vehicle',
-        name: 'VehicleManage',
-        component: VehicleManage,
+        path: 'todo',
+        name: 'EnterpriseTodo',
+        component: EnterpriseTodo,
         meta: {
-          title: '车辆管理',
-          hideTabbar: true
+          title: '待办',
+          workspace: 'enterprise'
         }
       },
       {
-        path: 'ship',
-        name: 'ShipManage',
-        component: ShipManage,
+        path: 'workbench',
+        name: 'EnterpriseWorkbench',
+        component: EnterpriseWorkbench,
         meta: {
-          title: '船舶管理',
-          hideTabbar: true
+          title: '工作台',
+          workspace: 'enterprise'
         }
       },
       {
-        path: 'exception',
-        name: 'ExceptionReport',
-        component: ExceptionReport,
+        path: 'apps',
+        name: 'EnterpriseApps',
+        component: EnterpriseApps,
         meta: {
-          title: '异常报备',
-          hideTabbar: true
+          title: '应用',
+          workspace: 'enterprise'
         }
       },
       {
-        path: 'loading/:id',
-        name: 'LoadingDetail',
-        component: LoadingDetail,
+        path: 'my',
+        name: 'EnterpriseMy',
+        component: EnterpriseMy,
         meta: {
-          title: '装货详情',
-          hideTabbar: true
-        }
-      },
-      {
-        path: 'unloading/:id',
-        name: 'UnloadingDetail',
-        component: UnloadingDetail,
-        meta: {
-          title: '卸货详情',
-          hideTabbar: true
+          title: '我的',
+          workspace: 'enterprise'
         }
       }
     ]
@@ -139,17 +151,35 @@ const router = createRouter({
 
 /**
  * 全局前置守卫
- * 用于路由跳转前的权限检查和页面标题设置
+ * 用于路由跳转前的权限检查、工作空间同步和页面标题设置
  */
 router.beforeEach((to, from, next) => {
   // 设置页面标题
   if (to.meta.title) {
-    document.title = `${to.meta.title} - 承运商统一APP`
+    const workspaceText = to.meta.workspace === 'enterprise' ? '企业空间' : '承运商APP'
+    document.title = `${to.meta.title} - ${workspaceText}`
   }
 
-  // Demo版本：自动设置默认用户角色（用于演示）
-  if (!localStorage.getItem('userRole')) {
-    localStorage.setItem('userRole', 'driver') // 默认设置为司机角色
+  // 同步工作空间状态
+  if (to.meta.workspace) {
+    // 导入store（动态导入避免循环依赖）
+    import('@/store').then(({ store }) => {
+      if (typeof store.switchWorkspace === 'function') {
+        store.switchWorkspace(to.meta.workspace)
+      } else if (typeof store.setCurrentWorkspace === 'function') {
+        store.setCurrentWorkspace(to.meta.workspace)
+      }
+    })
+  }
+
+  // Demo版本：在非登录页时，自动设置默认用户角色与工作空间
+  if (to.path !== '/login') {
+    if (!localStorage.getItem('userRole')) {
+      localStorage.setItem('userRole', 'driver') // 默认设置为司机角色
+    }
+    if (!localStorage.getItem('currentWorkspace')) {
+      localStorage.setItem('currentWorkspace', 'personal') // 默认设置为个人空间
+    }
   }
   
   next()

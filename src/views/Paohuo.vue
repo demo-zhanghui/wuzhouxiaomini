@@ -30,8 +30,12 @@
           <van-icon name="sun-o" size="16" class="weather-icon" />
         </div>
         <div class="header-actions">
+          <!-- 角色切换按钮 -->
+          <div class="role-switch" @click="showRoleSwitch">
+            <span class="role-text">{{ store.userRole === 'driver' ? '司机' : '船东' }}</span>
+            <van-icon name="exchange" size="14" class="switch-icon" />
+          </div>
           <van-icon name="ellipsis" size="20" class="more-icon" />
-          <van-icon name="cross" size="18" class="close-icon" />
         </div>
       </div>
     </div>
@@ -49,7 +53,7 @@
             </div>
             <div class="stat-item">
               <div class="stat-value">{{ getCurrentDashboardData().trips || getCurrentDashboardData().voyages }}</div>
-              <div class="stat-label">{{ getTripLabel() }}</div>
+              <div class="stat-label">{{ store.userRole === 'driver' ? '承运趟数' : '承运航次' }}</div>
             </div>
             <div class="stat-item">
               <div class="stat-value">{{ getCurrentDashboardData().income }}</div>
@@ -137,8 +141,8 @@
         </van-tabs>
       </div>
 
-      <!-- 底部服务区 -->
-      <div class="bottom-services">
+      <!-- 底部服务区 - 司机专属动态显隐 -->
+      <div v-if="store.userRole === 'driver'" class="bottom-services">
         <div class="service-grid">
           <div class="service-item" @click="handleScanPickup">
             <div class="service-icon service-icon-scan">
@@ -205,7 +209,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { showToast } from 'vant'
 import { store } from '@/store'
-import { getDataByRole, getTransportLabel } from '@/data/mockData'
+import { getDataByRole } from '@/data/mockData'
 
 // ===== 预设静态数据 =====
 
@@ -287,12 +291,7 @@ const getCurrentDashboardData = () => {
   return store.isDriver() ? driverDashboardData : shipOwnerDashboardData
 }
 
-/**
- * 获取承运标签
- */
-const getTripLabel = () => {
-  return getTransportLabel(store.userRole)
-}
+// 移除了getTripLabel函数，直接在模板中使用简单的三元表达式
 
 /**
  * 获取当前正在执行的任务数据
@@ -360,6 +359,20 @@ const handleParkReservation = () => {
  */
 const handleQueueCall = () => {
   showToast('排队叫号功能（Demo版本）')
+}
+
+/**
+ * 显示角色切换
+ */
+const showRoleSwitch = () => {
+  const newRole = store.userRole === 'driver' ? 'shipOwner' : 'driver'
+  const roleText = newRole === 'driver' ? '公路司机' : '水路船东'
+  
+  store.setUserRole(newRole)
+  showToast({
+    message: `已切换为：${roleText}`,
+    duration: 2000
+  })
 }
 
 /**
@@ -439,6 +452,31 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+}
+
+.role-switch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-switch:active {
+  transform: scale(0.95);
+}
+
+.role-text {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+.switch-icon {
+  color: #666;
 }
 
 .more-icon, .close-icon {

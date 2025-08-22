@@ -29,26 +29,63 @@
         @change="handleTabChange"
         class="custom-tabbar"
       >
-      <!-- 运单（左） -->
-      <van-tabbar-item name="yundan" icon="notes-o">
-        运单
-      </van-tabbar-item>
+        <!-- 个人空间导航 -->
+        <template v-if="isPersonalWorkspace">
+          <!-- 运单 -->
+          <van-tabbar-item name="yundan" icon="notes-o">
+            运单
+          </van-tabbar-item>
 
-      <!-- 中心按钮：首页（跑货） -->
-      <van-tabbar-item name="paohuo" class="center-tab-item">
-        <template #icon>
-          <div class="center-button">
-            <van-icon name="home-o" size="24" />
-          </div>
+          <!-- 中心按钮：首页（跑货） -->
+          <van-tabbar-item name="paohuo" class="center-tab-item">
+            <template #icon>
+              <div class="center-button">
+                <van-icon name="home-o" size="24" />
+              </div>
+            </template>
+            <span class="center-label">首页</span>
+          </van-tabbar-item>
+
+          <!-- 我的 -->
+          <van-tabbar-item name="my" icon="user-o">
+            我的
+          </van-tabbar-item>
         </template>
-        <span class="center-label">首页</span>
-      </van-tabbar-item>
 
-      <!-- 我的（右） -->
-      <van-tabbar-item name="my" icon="user-o">
-        我的
-      </van-tabbar-item>
-    </van-tabbar>
+        <!-- 企业空间导航 -->
+        <template v-else>
+          <!-- 首页 -->
+          <van-tabbar-item name="home" icon="home-o">
+            首页
+          </van-tabbar-item>
+
+          <!-- 待办 -->
+          <van-tabbar-item name="todo" icon="todo-list-o">
+            待办
+            <van-badge v-if="todoCount > 0" :content="todoCount" />
+          </van-tabbar-item>
+
+          <!-- 工作台（中心突出按钮） -->
+          <van-tabbar-item name="workbench" class="center-tab-item">
+            <template #icon>
+              <div class="center-button workbench-button">
+                <van-icon name="apps-o" size="24" />
+              </div>
+            </template>
+            <span class="center-label">工作台</span>
+          </van-tabbar-item>
+
+          <!-- 应用 -->
+          <van-tabbar-item name="apps" icon="grid-o">
+            应用
+          </van-tabbar-item>
+
+          <!-- 我的 -->
+          <van-tabbar-item name="my" icon="user-o">
+            我的
+          </van-tabbar-item>
+        </template>
+      </van-tabbar>
     </div>
   </div>
 </template>
@@ -56,11 +93,12 @@
 <script setup>
 /**
  * 主布局逻辑
- * 处理导航切换、工作台弹窗等功能
+ * 处理导航切换、工作空间切换等功能
  */
 
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { store } from '@/store'
 
 // 路由实例
 const router = useRouter()
@@ -68,17 +106,36 @@ const route = useRoute()
 
 // 响应式数据
 const activeTab = ref('paohuo')           // 当前激活的标签页
+const todoCount = ref(5)                  // 待办数量
+
+// 计算属性 - 是否为个人空间
+const isPersonalWorkspace = computed(() => {
+  return store.currentWorkspace === 'personal'
+})
 
 /**
  * 根据当前路由设置激活的标签页
  */
 const setActiveTabFromRoute = () => {
   const routeName = route.name
-  const tabMap = {
-    'Paohuo': 'paohuo',
+  
+  // 个人空间路由映射
+  const personalTabMap = {
     'YunDan': 'yundan',
+    'Paohuo': 'paohuo',
     'My': 'my'
   }
+  
+  // 企业空间路由映射
+  const enterpriseTabMap = {
+    'EnterpriseHome': 'home',
+    'EnterpriseTodo': 'todo',
+    'EnterpriseWorkbench': 'workbench',
+    'EnterpriseApps': 'apps',
+    'EnterpriseMy': 'my'
+  }
+  
+  const tabMap = isPersonalWorkspace.value ? personalTabMap : enterpriseTabMap
   
   if (tabMap[routeName]) {
     activeTab.value = tabMap[routeName]
@@ -90,15 +147,30 @@ const setActiveTabFromRoute = () => {
  * @param {string} name - 标签页名称
  */
 const handleTabChange = (name) => {
-  // 根据标签页名称跳转对应路由
-  const routeMap = {
-    'paohuo': '/main/paohuo',
-    'yundan': '/main/yundan',
-    'my': '/main/my'
+  let targetRoute = ''
+  
+  if (isPersonalWorkspace.value) {
+    // 个人空间路由映射
+    const personalRouteMap = {
+      'yundan': '/main/yundan',
+      'paohuo': '/main/paohuo',
+      'my': '/main/my'
+    }
+    targetRoute = personalRouteMap[name]
+  } else {
+    // 企业空间路由映射
+    const enterpriseRouteMap = {
+      'home': '/enterprise/home',
+      'todo': '/enterprise/todo',
+      'workbench': '/enterprise/workbench',
+      'apps': '/enterprise/apps',
+      'my': '/enterprise/my'
+    }
+    targetRoute = enterpriseRouteMap[name]
   }
   
-  if (routeMap[name]) {
-    router.push(routeMap[name])
+  if (targetRoute) {
+    router.push(targetRoute)
   }
 }
 
@@ -110,11 +182,18 @@ watch(route, () => {
 })
 
 /**
+ * 监听工作空间变化，更新导航状态
+ */
+watch(() => store.currentWorkspace, () => {
+  setActiveTabFromRoute()
+})
+
+/**
  * 组件挂载时初始化
  */
 onMounted(() => {
   setActiveTabFromRoute()
-  console.log('主布局已加载')
+  console.log('主布局已加载，当前工作空间:', store.currentWorkspace)
 })
 </script>
 
@@ -268,6 +347,12 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 10;
+}
+
+/* 企业工作台按钮样式 */
+.workbench-button {
+  background: linear-gradient(135deg, #1989fa, #4fc3f7) !important;
+  box-shadow: 0 6px 20px rgba(25, 137, 250, 0.4) !important;
 }
 
 .center-button:hover {

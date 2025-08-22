@@ -28,15 +28,17 @@
         <div class="user-info">
           <div class="user-name-row">
             <h2 class="user-name">张师傅</h2>
-            <!-- 动态身份标签与切换器 -->
-            <van-tag 
-              type="primary" 
-              round 
-              class="role-tag"
-              @click="showRoleSelector"
-            >
-              {{ getRoleDisplayText() }}
-            </van-tag>
+            <div class="tags-container">
+              <!-- 合并后的角色/空间切换器：单个蓝色标签 -->
+              <van-tag 
+                type="primary" 
+                round 
+                class="role-tag"
+                @click="showUnifiedSelector"
+              >
+                {{ getUnifiedDisplayText() }}
+              </van-tag>
+            </div>
           </div>
           <div class="user-stats">
             <span class="stat-item">完成 {{ achievements.totalTrips }} 次运输</span>
@@ -138,6 +140,8 @@
       </div>
     </div>
 
+    <!-- 去除单独的工作空间切换卡片（合并到统一选择器） -->
+
     <!-- 功能列表区 -->
     <div class="function-card">
       <van-cell-group inset>
@@ -194,7 +198,7 @@
             <div class="cell-title">进城申请记录</div>
           </template>
           <template #label>
-            <div class="cell-subtitle">城市通行申请</div>
+            <div class="cell-subtitle">货车进城通行申请</div>
           </template>
         </van-cell>
       </van-cell-group>
@@ -217,13 +221,13 @@
       </div>
     </div>
 
-    <!-- 角色切换动作面板 -->
+    <!-- 统一切换动作面板：公路司机/水路船东/企业职员 -->
     <van-action-sheet
-      v-model:show="showRoleSelectorSheet"
-      :actions="roleActions"
-      @select="onRoleSelect"
+      v-model:show="showUnifiedSelectorSheet"
+      :actions="unifiedActions"
+      @select="onUnifiedSelect"
       cancel-text="取消"
-      title="选择身份角色"
+      title="选择身份/空间"
     />
   </div>
 </template>
@@ -243,8 +247,8 @@ import { getDataByRole, getMileageLabel, getVehicleLabel, commonData } from '@/d
 // 路由实例
 const router = useRouter()
 
-// 角色选择器状态
-const showRoleSelectorSheet = ref(false)
+// 统一选择器状态（公路司机/水路船东/企业职员）
+const showUnifiedSelectorSheet = ref(false)
 
 // 计算属性
 const currentData = computed(() => getDataByRole(store.userRole))
@@ -265,17 +269,22 @@ const orderStatusList = computed(() => [
 // 默认头像
 const defaultAvatar = 'https://cdn.jsdelivr.net/npm/@vant/assets/cat.jpeg'
 
-// 角色选择器动作列表
-const roleActions = computed(() => [
-  { 
-    name: '切换为公路司机', 
-    value: 'driver',
-    disabled: store.userRole === 'driver'
-  },
-  { 
-    name: '切换为水路船东', 
+// 统一动作列表：水路船东、公路司机、企业职员
+const unifiedActions = computed(() => [
+  {
+    name: '水路船东',
     value: 'shipOwner',
-    disabled: store.userRole === 'shipOwner'
+    disabled: store.currentWorkspace === 'personal' && store.userRole === 'shipOwner'
+  },
+  {
+    name: '公路司机',
+    value: 'driver',
+    disabled: store.currentWorkspace === 'personal' && store.userRole === 'driver'
+  },
+  {
+    name: '企业职员',
+    value: 'enterprise',
+    disabled: store.currentWorkspace === 'enterprise'
   }
 ])
 
@@ -312,32 +321,59 @@ const getVehicleIcon = () => {
 }
 
 /**
- * 获取角色显示文本
+ * 获取统一标签显示文本
  */
-const getRoleDisplayText = () => {
+const getUnifiedDisplayText = () => {
+  if (store.currentWorkspace === 'enterprise') {
+    return '企业职员'
+  }
   return store.userRole === 'driver' ? '公路司机' : '水路船东'
 }
 
 /**
- * 显示角色选择器
+ * 显示统一选择器
  */
-const showRoleSelector = () => {
-  showRoleSelectorSheet.value = true
+const showUnifiedSelector = () => {
+  showUnifiedSelectorSheet.value = true
 }
 
 /**
- * 处理角色选择
+ * 处理统一选择
  */
-const onRoleSelect = (action) => {
-  if (action.value !== store.userRole) {
-    store.setUserRole(action.value)
-    showToast({
-      message: `已切换为：${action.name.replace('切换为', '')}`,
-      duration: 2000
-    })
+const onUnifiedSelect = (action) => {
+  const value = action.value
+  if (value === 'enterprise') {
+    if (typeof store.switchWorkspace === 'function') {
+      store.switchWorkspace('enterprise')
+    } else {
+      store.setCurrentWorkspace('enterprise')
+    }
+    // 进入企业空间
+    router.push('/enterprise/home')
+    showToast({ message: '已切换为：企业职员', duration: 2000 })
+    showUnifiedSelectorSheet.value = false
+    return
   }
-  showRoleSelectorSheet.value = false
+
+  // 司机/船东
+  if (value !== store.userRole && typeof store.setUserRole === 'function') {
+    store.setUserRole(value)
+  }
+  if (store.currentWorkspace !== 'personal') {
+    if (typeof store.switchWorkspace === 'function') {
+      store.switchWorkspace('personal')
+    } else {
+      store.setCurrentWorkspace('personal')
+    }
+  }
+  router.push('/main/paohuo')
+  const roleName = value === 'driver' ? '公路司机' : '水路船东'
+  showToast({ message: `已切换为：${roleName}` , duration: 2000 })
+  showUnifiedSelectorSheet.value = false
 }
+
+/**
+// （已合并到统一选择器）移除单独的工作空间选择逻辑
 
 /**
  * 格式化金额
@@ -480,6 +516,9 @@ const handleIncomeRecord = () => {
 }
 
 /**
+// （已合并到统一选择器）移除单独的企业空间切换
+
+/**
  * 处理异常报备
  */
 const handleExceptionReport = () => {
@@ -554,6 +593,69 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* 工作空间切换样式 */
+.workspace-switch {
+  margin: 12px;
+}
+
+.switch-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.switch-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1989fa;
+}
+
+.switch-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #e8f3ff 0%, #f0f8ff 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.switch-content {
+  flex: 1;
+}
+
+.switch-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #323233;
+  margin-bottom: 4px;
+}
+
+.switch-desc {
+  font-size: 12px;
+  color: #969799;
+  line-height: 1.3;
+}
+
+.switch-arrow {
+  color: #c8c9cc;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.switch-card:hover .switch-arrow {
+  transform: translateX(2px);
+  color: #1989fa;
+}
+
 /* 个人信息区样式 */
 .profile-content {
   display: flex;
@@ -585,6 +687,14 @@ onMounted(() => {
   line-height: 1.2;
 }
 
+/* 标签容器样式 */
+.tags-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .role-tag {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -605,6 +715,29 @@ onMounted(() => {
 .role-tag:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(25, 137, 250, 0.2);
+}
+
+/* 工作空间标签样式 */
+.workspace-tag {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 12px;
+  padding: 4px 12px;
+  height: auto;
+  line-height: 1.2;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workspace-tag:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.workspace-tag:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .user-stats {

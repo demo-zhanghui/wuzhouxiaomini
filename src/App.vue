@@ -4,14 +4,8 @@
 -->
 
 <template>
-  <div id="app" class="app-container">
-    <!-- 路由视图容器 -->
-    <router-view v-slot="{ Component }">
-      <!-- 添加页面切换动画 -->
-      <transition name="page-fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </router-view>
+  <div id="app">
+    <router-view />
   </div>
 </template>
 
@@ -19,7 +13,7 @@
 /**
  * App.vue 主要负责：
  * 1. 提供全局的页面容器
- * 2. 配置页面切换动画
+ * 2. 初始化全局状态
  * 3. 处理全局的样式和主题
  */
 
@@ -31,8 +25,12 @@ onMounted(() => {
   // 初始化用户角色状态
   store.initUserRole()
   
-  // 设置全局主题（如果需要）
+  // 初始化工作空间状态  
+  store.initWorkspace()
+  
   console.log('承运商统一APP已启动')
+  console.log('当前角色:', store.userRole === 'driver' ? '公路司机' : '水路司机')
+  console.log('当前工作空间:', store.currentWorkspace === 'personal' ? '个人空间' : '企业空间')
 })
 </script>
 
