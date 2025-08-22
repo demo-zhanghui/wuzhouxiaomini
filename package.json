@@ -1,6 +1,6 @@
 {
   "name": "carrier-unified-app-demo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "承运商统一APP演示项目",
   "private": true,
   "scripts": {
