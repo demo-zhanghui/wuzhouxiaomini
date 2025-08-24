@@ -14,6 +14,9 @@ import Login from '@/views/Login.vue'
 import YunDan from '@/views/YunDan.vue'
 import Paohuo from '@/views/Paohuo.vue'
 import My from '@/views/My.vue'
+import YunDanDetail from '@/views/YunDanDetail.vue'
+import LoadingDetail from '@/views/LoadingDetail.vue'
+import UnloadingDetail from '@/views/UnloadingDetail.vue'
 
 // 导入企业工作空间页面组件
 import EnterpriseHome from '@/views/enterprise/Home.vue'
@@ -75,6 +78,36 @@ const routes = [
         component: My,
         meta: {
           title: '我的',
+          workspace: 'personal'
+        }
+      },
+      // 运单详情页面
+      {
+        path: 'yundan/:id',
+        name: 'YunDanDetail',
+        component: YunDanDetail,
+        meta: {
+          title: '运单详情',
+          workspace: 'personal'
+        }
+      },
+      // 装货详情页面
+      {
+        path: 'loading/:id',
+        name: 'LoadingDetail',
+        component: LoadingDetail,
+        meta: {
+          title: '装货详情',
+          workspace: 'personal'
+        }
+      },
+      // 卸货详情页面
+      {
+        path: 'unloading/:id',
+        name: 'UnloadingDetail',
+        component: UnloadingDetail,
+        meta: {
+          title: '卸货详情',
           workspace: 'personal'
         }
       }

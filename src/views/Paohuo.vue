@@ -1,199 +1,144 @@
-<!--
-  跑货页面组件（重构版本）
-  严格遵循完全体指令，实现新的设计风格和状态机逻辑
-  
-  核心功能：
-  1. 轻盈头部背景 + 顶部导航区
-  2. 毛玻璃今日营运卡片（动态角色适配）
-  3. 核心任务区状态机逻辑（指派/进行中/空闲）
-  4. 场景化服务区（司机专属动态显隐）
--->
-
 <template>
-  <div class="paohuo-container">
-    <!-- 顶部状态栏 -->
-    <div class="status-bar">
-      <span class="time">9:41</span>
-      <div class="status-icons">
-        <van-icon name="signal" size="16" />
-        <van-icon name="wifi" size="16" />
-        <van-icon name="battery-full" size="16" />
+  <div class="cockpit-page">
+    <!-- 第一项：增补页面顶部的内容 (营造场景氛围) -->
+    <div class="header-gradient">
+      <div class="header-inner">
+        <div class="header-left">
+          <van-icon name="location-o" class="loc-icon" />
+          <span class="location-text">福州市</span>
+        </div>
+        <div class="header-right">
+          <div class="weather-info">
+            <van-icon name="cloudy-o" class="weather-icon" />
+            <span class="weather-temp">28℃</span>
+            <span class="weather-desc">多云</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第一项：顶部的"运输任务"数据卡片 -->
+      <div class="glass-card task-metrics">
+        <van-grid :column-num="3" :border="false">
+          <van-grid-item>
+            <div class="metric">
+              <div class="metric-value">{{ secondMetricValue }}</div>
+              <div class="metric-label">{{ secondMetricLabel }}</div>
+            </div>
+          </van-grid-item>
+          <van-grid-item>
+            <div class="metric">
+              <div class="metric-value">{{ dashboard.orders }}</div>
+              <div class="metric-label">运单</div>
+            </div>
+          </van-grid-item>
+          <van-grid-item>
+            <div class="metric">
+              <div class="metric-value">{{ dashboard.exceptions || 0 }}</div>
+              <div class="metric-label">异常</div>
+            </div>
+          </van-grid-item>
+        </van-grid>
       </div>
     </div>
 
-    <!-- 顶部导航区 -->
-    <div class="header-section">
-      <div class="header-content">
-        <div class="location-area">
-          <span class="location-text">马屿区</span>
-          <van-icon name="arrow-down" size="12" class="location-arrow" />
-          <van-icon name="sun-o" size="16" class="weather-icon" />
-        </div>
-        <div class="header-actions">
-          <!-- 角色切换按钮 -->
-          <div class="role-switch" @click="showRoleSwitch">
-            <span class="role-text">{{ store.userRole === 'driver' ? '司机' : '船东' }}</span>
-            <van-icon name="exchange" size="14" class="switch-icon" />
-          </div>
-          <van-icon name="ellipsis" size="20" class="more-icon" />
-        </div>
-      </div>
-    </div>
-
-    <!-- 滚动内容区域 -->
-    <div class="scroll-content">
-      <!-- 今日营运卡片 -->
-      <div class="dashboard-card">
-        <div class="dashboard-content">
-          <h3 class="dashboard-title">今日营运</h3>
-          <div class="dashboard-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ getCurrentDashboardData().orders }}</div>
-              <div class="stat-label">接单数</div>
+    <div class="content-wrap">
+      <!-- 第二项：中间的"主推运单"卡片 -->
+      <div class="card featured-order">
+        <div class="card-header">
+          <!-- 订单信息区域 -->
+          <div class="order-info">
+            <div class="order-group-left">
+              <div class="order-number-line">
+                <span class="order-label">运单号:</span>
+                <span class="order-number">{{ featured.orderNo }}</span>
+              </div>
+              <div class="cargo-tag">
+                <span>{{ featured.cargoType }}</span>
+              </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ getCurrentDashboardData().trips || getCurrentDashboardData().voyages }}</div>
-              <div class="stat-label">{{ store.userRole === 'driver' ? '承运趟数' : '承运航次' }}</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">{{ getCurrentDashboardData().income }}</div>
-              <div class="stat-label">预计运费收入</div>
+            
+            <div class="price-tag">
+              <span class="price-value">{{ featured.price }}</span>
+              <span class="price-unit">{{ featured.priceUnit }}</span>
             </div>
           </div>
         </div>
-        <!-- 背景装饰图标 -->
-        <div class="dashboard-bg-icon">
-          <van-icon name="logistics" size="60" />
+        
+        <div class="card-content">
+          <div class="route-section">
+            <div class="route-line">
+              <span class="start-point">{{ featured.origin }}</span>
+              <div class="route-arrow">
+                <div class="arrow-line"></div>
+                <div class="arrow-head">→</div>
+              </div>
+              <span class="end-point">{{ featured.destination }}</span>
+            </div>
+          </div>
+          
+          <div class="details-section">
+            <p class="transport-details">{{ featured.details }}</p>
+            <p class="vehicle-info">{{ isDriver ? '车牌号: ' + featured.licensePlate : '船舶名/航次号: ' + featured.shipName + ' / ' + featured.voyageNo }}</p>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <div class="action-buttons">
+            <van-button size="small" plain type="default" class="action-btn">更多</van-button>
+            <van-button size="small" plain type="danger" class="action-btn">取消运单</van-button>
+            <van-button size="small" type="primary" class="action-btn primary-btn">{{ isDriver ? '立即装货' : '立即装货' }}</van-button>
+          </div>
         </div>
       </div>
 
-      <!-- 消息通知区 -->
-      <div class="message-notification">
-        <van-icon name="volume-o" size="16" class="message-icon" />
-        <span class="message-text">闸口A12345在园区停留已超时</span>
-        <van-icon name="arrow" size="12" class="message-arrow" />
+      <!-- 第三项：下方的"快捷操作"区域 -->
+      <div class="quick-actions">
+        <div class="quick-actions-container">
+          <van-grid :column-num="2" :gutter="12" :border="false">
+            <van-grid-item>
+              <div class="qa-btn qa-blue">扫码接单</div>
+            </van-grid-item>
+            <van-grid-item>
+              <div class="qa-btn qa-green">出收车打卡</div>
+            </van-grid-item>
+            <van-grid-item v-if="isDriver">
+              <div class="qa-btn qa-cyan">入场预约</div>
+            </van-grid-item>
+            <van-grid-item v-else>
+              <div class="qa-btn qa-purple">港口服务</div>
+            </van-grid-item>
+          </van-grid>
+        </div>
       </div>
 
-      <!-- 核心任务区 -->
-      <div class="task-section">
-        <van-tabs v-model:active="activeTab" class="custom-tabs">
-          <van-tab title="当前运输" name="current">
-            <div class="current-transport">
-              <!-- 运输卡片 -->
-              <div class="transport-card">
-                <div class="transport-route">
-                  <span class="route-text">鄂尔多斯 → 鄂尔多斯</span>
-                  <span class="progress-text">进度 75%</span>
+      <!-- 我的运单区 -->
+      <div class="card my-orders">
+        <div class="section-title">我的运单</div>
+        <van-tabs v-model:active="activeTab" class="orders-tabs">
+          <van-tab title="全部" name="all" />
+          <van-tab title="已接单" name="received" />
+          <van-tab title="已装货" name="loaded" />
+          <van-tab title="已卸货" name="unloaded" />
+        </van-tabs>
+        <div class="orders-list">
+          <van-list :finished="true" finished-text="已加载全部">
+            <div v-for="item in currentOrders" :key="item.id" class="order-item">
+              <div class="oi-head">
+                <span class="oi-title">{{ isDriver ? '车牌号' : '船舶名' }}</span>
+                <span class="oi-value">{{ isDriver ? item.plateNumber : item.shipName }}</span>
+              </div>
+              <div class="oi-body">
+                <div class="oi-route">
+                  <span class="oi-origin">{{ isDriver ? item.origin : item.departurePort }}</span>
+                  <span class="oi-arrow">→</span>
+                  <span class="oi-dest">{{ isDriver ? item.destination : item.arrivalPort }}</span>
                 </div>
-                
-                <!-- 公司信息 -->
-                <div class="company-info">
-                  <div class="company-item">
-                    <div class="company-dot company-green"></div>
-                    <span class="company-name">衢州至红建材有限公司</span>
-                  </div>
-                  <div class="company-item">
-                    <div class="company-dot company-orange"></div>
-                    <span class="company-name">浙江至珍商贸有限公司</span>
-                  </div>
-                </div>
-                
-                <!-- 进度条 -->
-                <div class="progress-section">
-                  <div class="progress-bar">
-                    <div class="progress-fill" style="width: 80%"></div>
-                  </div>
-                  <div class="progress-info">
-                    <span class="progress-distance">距目的地 354km</span>
-                    <span class="progress-time">预计</span>
-                  </div>
-                </div>
-                
-                <!-- 货主信息 -->
-                <div class="cargo-owner">
-                  <div class="owner-avatar">
-                    <van-icon name="manager-o" size="20" />
-                  </div>
-                  <span class="owner-name">闽A26888</span>
-                  <span class="owner-price">39.89吨/未填</span>
+                <div class="oi-extra">
+                  <span class="oi-cargo">{{ item.cargoInfo }}</span>
                 </div>
               </div>
             </div>
-          </van-tab>
-
-          <van-tab title="指派任务" name="assigned">
-            <div class="assigned-transport">
-              <van-empty 
-                image="search"
-                description="暂无指派任务"
-              />
-            </div>
-          </van-tab>
-
-          <van-tab title="货源推荐" name="recommendation">
-            <div class="recommendation-transport">
-              <van-empty 
-                image="search"
-                description="暂无货源推荐"
-              />
-            </div>
-          </van-tab>
-        </van-tabs>
-      </div>
-
-      <!-- 底部服务区 - 司机专属动态显隐 -->
-      <div v-if="store.userRole === 'driver'" class="bottom-services">
-        <div class="service-grid">
-          <div class="service-item" @click="handleScanPickup">
-            <div class="service-icon service-icon-scan">
-              <van-icon name="scan" size="24" />
-            </div>
-            <span class="service-text">扫码提车</span>
-            <span class="service-desc">闽A12345</span>
-          </div>
-          
-          <div class="service-item" @click="handleVehicleManage">
-            <div class="service-icon service-icon-manage">
-              <van-icon name="logistics" size="24" />
-            </div>
-            <span class="service-text">车辆管理</span>
-            <span class="service-desc">新增19辆</span>
-          </div>
-          
-          <div class="service-item" @click="handleParkReservation">
-            <div class="service-icon service-icon-park">
-              <van-icon name="location-o" size="24" />
-            </div>
-            <span class="service-text">园区预约</span>
-            <span class="service-desc">随时随地</span>
-          </div>
-          
-          <div class="service-item" @click="handleQueueCall">
-            <div class="service-icon service-icon-queue">
-              <van-icon name="phone-o" size="24" />
-            </div>
-            <span class="service-text">排队叫号</span>
-            <span class="service-desc">No.35</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 推荐区域 -->
-      <div class="recommendation-section">
-        <div class="recommendation-row">
-          <div class="recommendation-card recommendation-driver">
-            <h4 class="recommendation-title">推荐司机</h4>
-            <van-button type="primary" size="small" class="recommendation-btn">
-              查看司机
-            </van-button>
-          </div>
-          
-          <div class="recommendation-card recommendation-cargo">
-            <h4 class="recommendation-title">推荐货主</h4>
-            <van-button type="danger" size="small" class="recommendation-btn">
-              寻找企业
-            </van-button>
-          </div>
+          </van-list>
         </div>
       </div>
     </div>
@@ -201,662 +146,561 @@
 </template>
 
 <script setup>
-/**
- * 跑货页面逻辑（重构版本）
- * 严格遵循完全体指令，实现新的状态机逻辑和预设数据
- */
-
-import { ref, computed, onMounted } from 'vue'
-import { showToast } from 'vant'
+import { computed, ref } from 'vue'
 import { store } from '@/store'
-import { getDataByRole } from '@/data/mockData'
 
-// ===== 预设静态数据 =====
+// 角色标识
+const isDriver = computed(() => store.userRole === 'driver')
 
-// 1. 用于"今日营运"卡片的数据
-const driverDashboardData = {
-  orders: 5,
-  trips: 3,
-  income: '3560.00'
+// 预设静态数据（严格按需求）
+// 1. 司机角色的数据
+const driverDashboardData = { orders: 3, trips: 2, exceptions: 1 }
+const featuredDriverTask = {
+  orderNo: '12345678910111213',
+  cargoType: '普货',
+  price: '35',
+  priceUnit: '元/吨',
+  origin: '福州 仓山',
+  destination: '香港 铜锣湾',
+  details: '预计运输总里程: 300km | 3个装货点 | 2个卸货点',
+  licensePlate: '闽A·K00993D'
 }
+const driverOrders = [
+  { id: 'D001', plateNumber: '闽A·K00993D', origin: '福州 仓山', destination: '香港 铜锣湾', cargoInfo: '普货 35吨' },
+  { id: 'D002', plateNumber: '闽A·A77777', origin: '厦门 同安', destination: '深圳 盐田', cargoInfo: '建材 18吨' }
+]
 
-const shipOwnerDashboardData = {
-  orders: 2,
-  voyages: 1, // 注意，这里是航次
-  income: '85000.00'
-}
-
-// 2. 用于核心任务区的"状态机"数据
-// 状态一：指派任务的数据
-const assignedTaskData = {
-  id: 'TSK20250820001',
-  start: '上海市宝山区',
-  end: '江苏省苏州市',
-  cargoInfo: '设备备件 3.5吨'
-}
-
-// 状态二：司机执行中任务的数据
-const driverOngoingTask = {
-  status: '运输中',
-  statusType: 'primary', // 用于van-tag的type
-  price: '800',
-  licensePlate: '京A12345',
-  route: '北京市朝阳区 → 天津市滨海新区',
-  cargoInfo: '电子产品 5.2吨',
-  eta: '01-15 14:30'
-}
-
-// 状态二：船东执行中任务的数据
-const shipOwnerOngoingTask = {
-  status: '航行中',
-  statusType: 'success', // 用于van-tag的type
-  price: '65000',
+// 2. 船东角色的数据
+const shipOwnerDashboardData = { orders: 5, voyages: 3, exceptions: 2 }
+const featuredShipOwnerTask = {
+  orderNo: '98765432109876543',
+  cargoType: '集装箱',
+  price: '80',
+  priceUnit: '元/箱',
+  origin: '厦门港',
+  destination: '新加坡港',
+  details: '预计总航程: 1800海里 | 1个装货港 | 1个卸货港',
   shipName: '东方之星号',
-  voyageNo: 'DX202508A', // 航次号
-  ports: '上海洋山港 → 广东广州港', // 起运港/目的港
-  cargoInfo: '集装箱 200TEU',
-  eta: '08-25 18:00'
+  voyageNo: 'DX202509A'
 }
+const shipOwnerOrders = [
+  { id: 'S001', shipName: '东方之星号', departurePort: '厦门港', arrivalPort: '新加坡港', cargoInfo: '集装箱 120TEU' },
+  { id: 'S002', shipName: '海洋之心号', departurePort: '福州港', arrivalPort: '香港港', cargoInfo: '散货 8000吨' }
+]
 
-// 为了方便演示，可以创建一个变量来控制当前显示哪个状态
-// 'assigned', 'ongoing', 'idle'
-const currentTaskState = ref('ongoing')
+// 动态绑定
+const dashboard = computed(() => (isDriver.value ? driverDashboardData : shipOwnerDashboardData))
+const featured = computed(() => (isDriver.value ? featuredDriverTask : featuredShipOwnerTask))
+const allOrders = computed(() => (isDriver.value ? driverOrders : shipOwnerOrders))
 
-// ===== 响应式数据 =====
-const activeTab = ref('current')
+// 运输任务毛玻璃第二项的值与标签
+const secondMetricValue = computed(() => (isDriver.value ? dashboard.value.trips : dashboard.value.voyages))
+const secondMetricLabel = computed(() => (isDriver.value ? '趟数' : '航次'))
 
-// ===== 计算属性 =====
-
-// 根据角色获取对应的历史数据（保留原有数据源）
-const currentData = computed(() => getDataByRole(store.userRole))
-const historyOrders = computed(() => currentData.value.historyOrders)
-
-// 欢迎文本
-const welcomeText = computed(() => {
-  const hour = new Date().getHours()
-  let timeText = ''
-  
-  if (hour < 6) timeText = '夜深了'
-  else if (hour < 12) timeText = '早上好'
-  else if (hour < 18) timeText = '下午好'
-  else timeText = '晚上好'
-  
-  return `${timeText}，${store.userInfo.name}！`
-})
-
-/**
- * 获取当前角色对应的今日营运数据
- */
-const getCurrentDashboardData = () => {
-  return store.isDriver() ? driverDashboardData : shipOwnerDashboardData
-}
-
-// 移除了getTripLabel函数，直接在模板中使用简单的三元表达式
-
-/**
- * 获取当前正在执行的任务数据
- */
-const getCurrentOngoingTask = () => {
-  return store.isDriver() ? driverOngoingTask : shipOwnerOngoingTask
-}
-
-// ===== 事件处理函数 =====
-
-/**
- * 处理拒绝任务
- */
-const handleRejectTask = () => {
-  showToast('任务已拒绝')
-  currentTaskState.value = 'idle'
-}
-
-/**
- * 处理接受任务
- */
-const handleAcceptTask = () => {
-  showToast('任务已接受')
-  currentTaskState.value = 'ongoing'
-}
-
-/**
- * 查看正在执行任务详情
- */
-const viewOngoingTaskDetail = () => {
-  const task = getCurrentOngoingTask()
-  showToast(`查看任务详情：${task.status}`)
-}
-
-/**
- * 查看历史订单详情
- */
-const viewOrderDetail = (order) => {
-  showToast(`查看历史订单：${order.id}`)
-}
-
-/**
- * 处理扫码提车
- */
-const handleScanPickup = () => {
-  showToast('扫码提车功能（Demo版本）')
-}
-
-/**
- * 处理车辆管理
- */
-const handleVehicleManage = () => {
-  showToast('车辆管理功能（Demo版本）')
-}
-
-/**
- * 处理园区预约
- */
-const handleParkReservation = () => {
-  showToast('园区预约功能（Demo版本）')
-}
-
-/**
- * 处理排队叫号
- */
-const handleQueueCall = () => {
-  showToast('排队叫号功能（Demo版本）')
-}
-
-/**
- * 显示角色切换
- */
-const showRoleSwitch = () => {
-  const newRole = store.userRole === 'driver' ? 'shipOwner' : 'driver'
-  const roleText = newRole === 'driver' ? '公路司机' : '水路船东'
-  
-  store.setUserRole(newRole)
-  showToast({
-    message: `已切换为：${roleText}`,
-    duration: 2000
-  })
-}
-
-/**
- * 组件挂载时初始化
- */
-onMounted(() => {
-  console.log('跑货页面已加载，当前角色：', store.getRoleDisplayName())
-  console.log('当前任务状态：', currentTaskState.value)
-})
+// 我的运单 Tab
+const activeTab = ref('all')
+const currentOrders = computed(() => allOrders.value)
 </script>
 
 <style scoped>
-/**
- * 跑货页面样式（重新设计，参考图片风格）
- */
-
-.paohuo-container {
+.cockpit-page {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #87ceeb 0%, #f0f8ff 50%, #ffffff 100%);
-  padding-bottom: 80px;
+  background: #f7f8fa;
+  /* 添加统一的容器约束 */
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* 状态栏 */
-.status-bar {
+/* 第一项：增补页面顶部的内容 (营造场景氛围) */
+.header-gradient {
+  position: relative;
+  padding: 16px 16px 100px; /* 统一左右边距为16px */
+  background: linear-gradient(180deg, #e6f2ff 0%, #f7f8fa 100%);
+  /* 确保容器宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 16px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #000;
-}
-
-.status-icons {
-  display: flex;
-  gap: 4px;
-}
-
-.status-icons .van-icon {
-  color: #000;
-}
-
-/* 顶部导航区 */
-.header-section {
-  padding: 12px 16px;
-  margin-bottom: 8px;
-}
-
-.header-content {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 20px; /* 添加底部间距 */
 }
 
-.location-area {
+.header-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+.loc-icon {
+  color: #4a90e2;
+  font-size: 18px;
+}
+
 .location-text {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #2b2f36;
 }
 
-.location-arrow {
-  color: #666;
-}
-
-.weather-icon {
-  color: #f39c12;
-  margin-left: 4px;
-}
-
-.header-actions {
+.header-right {
   display: flex;
-  gap: 12px;
   align-items: center;
 }
 
-.role-switch {
+.weather-info {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.role-switch:active {
-  transform: scale(0.95);
-}
-
-.role-text {
-  font-size: 12px;
-  color: #333;
-  font-weight: 500;
-}
-
-.switch-icon {
-  color: #666;
-}
-
-.more-icon, .close-icon {
-  color: #666;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-}
-
-.scroll-content {
-  padding: 0 16px;
-}
-
-/* 今日营运卡片 */
-.dashboard-card {
-  position: relative;
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 12px;
-  color: white;
-  overflow: hidden;
-}
-
-.dashboard-content {
-  position: relative;
-  z-index: 2;
-}
-
-.dashboard-title {
+.weather-icon {
+  color: #4a90e2;
   font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 16px 0;
-  opacity: 0.9;
 }
 
-.dashboard-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.weather-temp {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2b2f36;
 }
 
-.stat-item {
-  text-align: center;
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.dashboard-bg-icon {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.1;
-  z-index: 1;
-}
-
-.dashboard-bg-icon .van-icon {
-  color: white;
-}
-
-/* 消息通知区 */
-.message-notification {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #333;
-}
-
-.message-icon {
-  color: #ff6b35;
-  margin-right: 8px;
-}
-
-.message-text {
-  flex: 1;
+.weather-desc {
   font-size: 13px;
-}
-
-.message-arrow {
-  color: #ccc;
-}
-
-/* 核心任务区 */
-.task-section {
-  background: white;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* Tab切换器 */
-.custom-tabs {
-  --van-tabs-line-height: 44px;
-}
-
-.custom-tabs :deep(.van-tabs__nav) {
-  background: white;
-  padding: 0;
-}
-
-.custom-tabs :deep(.van-tab) {
-  font-weight: 500;
-  color: #666;
-  font-size: 14px;
-}
-
-.custom-tabs :deep(.van-tab--active) {
-  color: #4a90e2;
-  font-weight: 600;
-}
-
-.custom-tabs :deep(.van-tabs__line) {
-  background: #4a90e2;
-  border-radius: 2px;
-  height: 2px;
-  width: 20px !important;
-}
-
-/* 当前运输内容 */
-.current-transport {
-  padding: 16px;
-}
-
-/* 运输卡片 */
-.transport-card {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e9ecef;
-}
-
-.transport-route {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.route-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
-.progress-text {
-  font-size: 14px;
-  color: #4a90e2;
+  color: #6b7683;
   font-weight: 500;
 }
 
-/* 公司信息 */
-.company-info {
-  margin-bottom: 16px;
+/* 第一项：顶部的"运输任务"毛玻璃数据卡片 */
+.glass-card {
+  position: absolute;
+  left: 16px; /* 统一左边距 */
+  right: 16px; /* 统一右边距 */
+  bottom: -30px; /* 进一步减少底部偏移，最小化与主推运单的间距 */
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(28, 43, 64, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* 确保宽度计算正确 */
+  width: calc(100% - 32px);
+  box-sizing: border-box;
 }
 
-.company-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.company-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-.company-green {
-  background: #52c41a;
-}
-
-.company-orange {
-  background: #fa8c16;
-}
-
-.company-name {
-  font-size: 14px;
-  color: #333;
-}
-
-/* 进度条区域 */
-.progress-section {
-  margin-bottom: 16px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: #e9ecef;
-  border-radius: 2px;
-  margin-bottom: 8px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4a90e2, #357abd);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
-.progress-distance {
-  color: #666;
-}
-
-.progress-time {
-  color: #666;
-}
-
-/* 货主信息 */
-.cargo-owner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #f1f3f4;
-  border-radius: 8px;
-}
-
-.owner-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #4a90e2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.owner-avatar .van-icon {
-  color: white;
-}
-
-.owner-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-}
-
-.owner-price {
-  font-size: 14px;
-  font-weight: bold;
-  color: #4a90e2;
-  margin-left: auto;
-}
-
-/* Tab内容区通用样式 */
-.assigned-transport,
-.recommendation-transport {
-  padding: 40px 20px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 底部服务区 */
-.bottom-services {
-  margin-bottom: 16px;
-}
-
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  background: white;
-  border-radius: 16px;
+.task-metrics {
   padding: 20px 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.service-item {
+.metric {
+  text-align: center;
+  height: 70px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  cursor: pointer;
-}
-
-.service-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  align-items: center;
+  padding: 12px 8px;
+  box-sizing: border-box;
 }
 
-.service-icon-scan {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+.metric-value {
+  font-size: 24px; /* 增大字体 */
+  font-weight: 700;
+  color: #1f2d3d;
+  line-height: 1.2;
+  margin-bottom: 6px;
 }
 
-.service-icon-manage {
-  background: linear-gradient(135deg, #ffd93d, #ff9500);
-}
-
-.service-icon-park {
-  background: linear-gradient(135deg, #74b9ff, #0984e3);
-}
-
-.service-icon-queue {
-  background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-}
-
-.service-icon .van-icon {
-  color: white;
-}
-
-.service-text {
-  font-size: 12px;
+.metric-label {
+  font-size: 14px; /* 增大字体 */
+  color: #6b7683;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
-.service-desc {
-  font-size: 10px;
-  color: #666;
+/* 第一项：内容区容器 - 确保足够的顶部间距 */
+.content-wrap {
+  padding: 60px 16px 16px; /* 进一步减少顶部内边距从70px到60px，最小化与数据卡片的间距 */
+  /* 添加统一的容器约束 */
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
-/* 推荐区域 */
-.recommendation-section {
+/* 白色圆角卡片通用样式 */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px; /* 缩小垂直间距从20px改为16px */
+  /* 确保所有卡片宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+  /* 添加明确的左右边距 */
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* 第二项：中间的"主推运单"卡片 */
+.featured-order {
+  padding: 20px;
+  margin-top: 0; /* 完全消除与上方数据卡片的间距 */
+  /* 确保宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card-header {
   margin-bottom: 20px;
 }
 
-.recommendation-row {
+.order-info {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: #f0f9ff;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #e1f5fe;
+  overflow: hidden; /* 防止内容溢出 */
+  min-height: 60px; /* 确保最小高度 */
+  width: 100%; /* 确保宽度100% */
+  box-sizing: border-box; /* 确保padding不会影响总宽度 */
+  position: relative; /* 添加相对定位 */
+  /* 调试边框 */
+  /* border: 2px solid red; */
+}
+
+.order-group-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px; /* 增加间距 */
+  flex: 1; /* 占据剩余空间 */
+  min-width: 0; /* 允许flex子项收缩 */
+  overflow: hidden; /* 防止内容溢出 */
+  /* 调试边框 */
+  /* border: 1px solid blue; */
+}
+
+.order-group-spacer {
+  justify-self: center !important;
+  width: 20px; /* 固定宽度 */
+  /* 调试边框 */
+  /* border: 1px solid green; */
+}
+
+.order-number-line {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* 减少运单号和编码之间的间距 */
+  white-space: nowrap; /* 防止换行 */
+}
+
+.order-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap; /* 防止换行 */
+}
+
+.order-number {
+  font-size: 14px;
+  color: #1f2d3d;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: nowrap; /* 防止换行 */
+}
+
+.cargo-tag {
+  background: #e6f2ff;
+  padding: 6px 10px; /* 增加内边距 */
+  border-radius: 8px; /* 增加圆角 */
+  border: 1px solid #d1e9ff;
+  font-size: 13px;
+  color: #3498db;
+  font-weight: 600;
+  white-space: nowrap; /* 防止换行 */
+  flex-shrink: 0; /* 防止收缩 */
+}
+
+.price-tag {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  background: #e6f2ff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1e9ff;
+  flex-shrink: 0; /* 防止收缩 */
+  min-width: 0; /* 允许收缩 */
+  overflow: hidden; /* 防止内容溢出 */
+  text-align: center; /* 确保文字居中 */
+  white-space: nowrap; /* 防止换行 */
+  /* 调试边框 */
+  /* border: 1px solid orange; */
+}
+
+.price-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff4757;
+  line-height: 1;
+}
+
+.price-unit {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.card-content {
+  margin-bottom: 20px;
+}
+
+.route-section {
+  margin-bottom: 16px;
+}
+
+.route-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+
+.start-point, .end-point {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2d3d;
+  flex: 1;
+}
+
+.start-point {
+  text-align: left;
+}
+
+.end-point {
+  text-align: right;
+}
+
+.route-arrow {
+  display: flex;
+  align-items: center;
+  flex: 0 0 80px;
+  justify-content: center;
+  position: relative;
+}
+
+.arrow-line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 1px;
+}
+
+.arrow-head {
+  position: absolute;
+  right: 0;
+  font-size: 16px;
+  color: #3498db;
+  font-weight: 600;
+}
+
+.details-section {
+  border-top: 1px solid #f5f7fa;
+  padding-top: 16px;
+}
+
+.transport-details {
+  font-size: 14px;
+  color: #6b7683;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.vehicle-info {
+  font-size: 13px;
+  color: #8a9199;
+  margin: 0;
+}
+
+.card-actions {
+  border-top: 1px solid #f5f7fa;
+  padding-top: 20px;
+}
+
+.action-buttons {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
-.recommendation-card {
-  flex: 1;
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.recommendation-driver {
-  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-}
-
-.recommendation-cargo {
-  background: linear-gradient(135deg, #fce4ec, #f8bbd9);
-}
-
-.recommendation-title {
+.action-btn {
   font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 12px 0;
+  height: 40px;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
-.recommendation-btn {
-  min-width: 80px;
+.action-btn:first-child {
+  flex: 0.8;
+}
+
+.action-btn.primary-btn {
+  flex: 1.3;
+  background: #3498db !important;
+  border-color: #3498db !important;
+  font-weight: 600;
+}
+
+/* 第三项：下方的"快捷操作"区域 */
+.quick-actions {
+  margin: 16px 0; /* 缩小垂直间距从20px改为16px */
+  padding: 0 16px; /* 确保与卡片边距一致 */
+  /* 确保容器宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 快捷操作容器样式 - 确保与其他容器一致 */
+.quick-actions-container {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+  /* 确保宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+  /* 添加明确的左右边距 */
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* 优化快捷操作按钮的尺寸和间距 */
+.qa-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 16px 12px; /* 适当减小padding，让按钮更精致 */
+  border-radius: 14px;
+  color: #1f2d3d;
+  font-weight: 700;
+  background: #f5f7fa;
+  border: none;
+  max-width: 180px; /* 设置最大宽度，让按钮更精致 */
+  margin: 0 auto;
+  font-size: 14px; /* 稍微减小字体 */
+  transition: all 0.2s ease; /* 添加过渡效果 */
+  /* 确保按钮容器宽度一致 */
+  box-sizing: border-box;
+}
+
+.qa-btn:active {
+  transform: scale(0.98); /* 点击时的缩放效果 */
+}
+
+.qa-blue { background: #e6f1ff; }
+.qa-green { background: #e5fbef; }
+.qa-cyan { background: #e8fbff; }
+.qa-purple { background: #f3ebff; }
+
+/* 我的运单区 */
+.my-orders {
+  padding-bottom: 20px;
+  margin-top: 16px; /* 缩小与上方快捷操作的间距从20px改为16px */
+  /* 确保宽度一致 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-title {
+  padding: 16px 16px 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2d3d;
+}
+
+.orders-tabs :deep(.van-tabs__nav) {
+  background: #ffffff;
+}
+
+.orders-list {
+  padding: 12px 16px 16px;
+}
+
+.order-item {
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: #ffffff;
+}
+
+.oi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e9f3ff;
+  padding: 12px 16px;
+}
+
+.oi-title {
+  font-size: 13px;
+  color: #5e6a73;
+}
+
+.oi-value {
+  font-size: 13px;
+  color: #2b2f36;
+  font-weight: 600;
+}
+
+.oi-body { 
+  padding: 16px; 
+}
+
+.oi-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #1f2d3d;
+  font-weight: 600;
+}
+
+.oi-extra {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6b7683;
+}
+
+.arrow, .oi-arrow { 
+  color: #9aa4af; 
+}
+
+/* 添加全局样式重置，确保Vant组件不影响布局 */
+:deep(.van-grid) {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:deep(.van-grid-item) {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:deep(.van-tabs) {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+:deep(.van-list) {
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 </style>
+

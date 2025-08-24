@@ -313,7 +313,7 @@ const goBack = () => {
 // 跳转详情
 const goDetail = (order) => {
   const mode = (localStorage.getItem('userRole') === 'shipOwner') ? 'water' : 'road'
-  router.push({ name: 'WaybillDetail', params: { id: order.id }, query: { mode } })
+  router.push({ name: 'YunDanDetail', params: { id: order.id }, query: { mode } })
 }
 
 // 显示筛选器
