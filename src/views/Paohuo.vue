@@ -214,7 +214,7 @@ const currentOrders = computed(() => allOrders.value)
 /* 第一项：增补页面顶部的内容 (营造场景氛围) */
 .header-gradient {
   position: relative;
-  padding: 16px 16px 100px; /* 统一左右边距为16px */
+  padding: 10px 16px 70px; /* 进一步减少顶部和底部内边距 */
   background: linear-gradient(180deg, #e6f2ff 0%, #f7f8fa 100%);
   /* 确保容器宽度一致 */
   width: 100%;
@@ -225,7 +225,7 @@ const currentOrders = computed(() => allOrders.value)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px; /* 添加底部间距 */
+  margin-bottom: 14px; /* 进一步减少底部间距 */
 }
 
 .header-left {
@@ -278,7 +278,7 @@ const currentOrders = computed(() => allOrders.value)
   position: absolute;
   left: 16px; /* 统一左边距 */
   right: 16px; /* 统一右边距 */
-  bottom: -30px; /* 进一步减少底部偏移，最小化与主推运单的间距 */
+  bottom: -15px; /* 进一步减少底部偏移 */
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -291,30 +291,30 @@ const currentOrders = computed(() => allOrders.value)
 }
 
 .task-metrics {
-  padding: 20px 16px;
+  padding: 14px 16px; /* 进一步减少内边距 */
 }
 
 .metric {
   text-align: center;
-  height: 70px;
+  height: 55px; /* 进一步减少高度 */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 12px 8px;
+  padding: 8px 6px; /* 进一步减少内边距 */
   box-sizing: border-box;
 }
 
 .metric-value {
-  font-size: 24px; /* 增大字体 */
+  font-size: 22px; /* 稍微减小字体 */
   font-weight: 700;
   color: #1f2d3d;
   line-height: 1.2;
-  margin-bottom: 6px;
+  margin-bottom: 4px; /* 减少底部间距 */
 }
 
 .metric-label {
-  font-size: 14px; /* 增大字体 */
+  font-size: 13px; /* 稍微减小字体 */
   color: #6b7683;
   font-weight: 500;
   line-height: 1.2;
@@ -322,7 +322,7 @@ const currentOrders = computed(() => allOrders.value)
 
 /* 第一项：内容区容器 - 确保足够的顶部间距 */
 .content-wrap {
-  padding: 60px 16px 16px; /* 进一步减少顶部内边距从70px到60px，最小化与数据卡片的间距 */
+  padding: 45px 16px 10px; /* 进一步减少顶部内边距和底部内边距 */
   /* 添加统一的容器约束 */
   width: 100%;
   box-sizing: border-box;
@@ -334,7 +334,7 @@ const currentOrders = computed(() => allOrders.value)
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  margin-bottom: 16px; /* 缩小垂直间距从20px改为16px */
+  margin-bottom: 10px; /* 进一步缩小垂直间距 */
   /* 确保所有卡片宽度一致 */
   width: 100%;
   box-sizing: border-box;
@@ -345,7 +345,7 @@ const currentOrders = computed(() => allOrders.value)
 
 /* 第二项：中间的"主推运单"卡片 */
 .featured-order {
-  padding: 20px;
+  padding: 14px; /* 进一步减少内边距 */
   margin-top: 0; /* 完全消除与上方数据卡片的间距 */
   /* 确保宽度一致 */
   width: 100%;
@@ -353,7 +353,7 @@ const currentOrders = computed(() => allOrders.value)
 }
 
 .card-header {
-  margin-bottom: 20px;
+  margin-bottom: 14px; /* 进一步减少底部间距 */
 }
 
 .order-info {
@@ -361,11 +361,11 @@ const currentOrders = computed(() => allOrders.value)
   align-items: center !important;
   justify-content: space-between !important;
   background: #f0f9ff;
-  padding: 16px 18px;
+  padding: 10px 14px; /* 进一步减少内边距 */
   border-radius: 12px;
   border: 1px solid #e1f5fe;
   overflow: hidden; /* 防止内容溢出 */
-  min-height: 60px; /* 确保最小高度 */
+  min-height: 45px; /* 进一步减少最小高度 */
   width: 100%; /* 确保宽度100% */
   box-sizing: border-box; /* 确保padding不会影响总宽度 */
   position: relative; /* 添加相对定位 */
@@ -376,7 +376,7 @@ const currentOrders = computed(() => allOrders.value)
 .order-group-left {
   display: flex !important;
   align-items: center !important;
-  gap: 16px; /* 增加间距 */
+  gap: 10px; /* 进一步减少间距 */
   flex: 1; /* 占据剩余空间 */
   min-width: 0; /* 允许flex子项收缩 */
   overflow: hidden; /* 防止内容溢出 */
@@ -430,7 +430,7 @@ const currentOrders = computed(() => allOrders.value)
   flex-direction: column !important;
   align-items: center !important;
   background: #e6f2ff;
-  padding: 10px 14px;
+  padding: 6px 10px; /* 进一步减少内边距 */
   border-radius: 10px;
   border: 1px solid #d1e9ff;
   flex-shrink: 0; /* 防止收缩 */
@@ -443,36 +443,36 @@ const currentOrders = computed(() => allOrders.value)
 }
 
 .price-value {
-  font-size: 24px;
+  font-size: 22px; /* 稍微减小字体 */
   font-weight: 700;
   color: #ff4757;
   line-height: 1;
 }
 
 .price-unit {
-  font-size: 13px;
+  font-size: 12px; /* 稍微减小字体 */
   color: #666;
-  margin-top: 4px;
+  margin-top: 3px; /* 减少顶部间距 */
   font-weight: 500;
 }
 
 .card-content {
-  margin-bottom: 20px;
+  margin-bottom: 14px; /* 进一步减少底部间距 */
 }
 
 .route-section {
-  margin-bottom: 16px;
+  margin-bottom: 10px; /* 进一步减少底部间距 */
 }
 
 .route-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  padding: 10px 0; /* 进一步减少内边距 */
 }
 
 .start-point, .end-point {
-  font-size: 18px;
+  font-size: 17px; /* 稍微减小字体 */
   font-weight: 600;
   color: #1f2d3d;
   flex: 1;
@@ -511,36 +511,36 @@ const currentOrders = computed(() => allOrders.value)
 
 .details-section {
   border-top: 1px solid #f5f7fa;
-  padding-top: 16px;
+  padding-top: 10px; /* 进一步减少顶部内边距 */
 }
 
 .transport-details {
-  font-size: 14px;
+  font-size: 12px; /* 进一步减小字体 */
   color: #6b7683;
-  line-height: 1.5;
-  margin: 0 0 10px 0;
+  line-height: 1.3; /* 进一步减少行高 */
+  margin: 0 0 6px 0; /* 进一步减少底部间距 */
 }
 
 .vehicle-info {
-  font-size: 13px;
+  font-size: 11px; /* 进一步减小字体 */
   color: #8a9199;
   margin: 0;
 }
 
 .card-actions {
   border-top: 1px solid #f5f7fa;
-  padding-top: 20px;
+  padding-top: 14px; /* 进一步减少顶部内边距 */
 }
 
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px; /* 进一步减少按钮间距 */
   align-items: center;
 }
 
 .action-btn {
-  font-size: 14px;
-  height: 40px;
+  font-size: 12px; /* 进一步减小字体 */
+  height: 32px; /* 进一步减少按钮高度 */
   border-radius: 10px;
   flex: 1;
   min-width: 0;
@@ -559,7 +559,7 @@ const currentOrders = computed(() => allOrders.value)
 
 /* 第三项：下方的"快捷操作"区域 */
 .quick-actions {
-  margin: 16px 0; /* 缩小垂直间距从20px改为16px */
+  margin: 10px 0; /* 进一步缩小垂直间距 */
   padding: 0 16px; /* 确保与卡片边距一致 */
   /* 确保容器宽度一致 */
   width: 100%;
@@ -571,7 +571,7 @@ const currentOrders = computed(() => allOrders.value)
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 14px; /* 进一步减少内边距 */
   /* 确保宽度一致 */
   width: 100%;
   box-sizing: border-box;
@@ -585,15 +585,15 @@ const currentOrders = computed(() => allOrders.value)
   display: block;
   width: 100%;
   text-align: center;
-  padding: 16px 12px; /* 适当减小padding，让按钮更精致 */
+  padding: 12px 8px; /* 进一步减小padding */
   border-radius: 14px;
   color: #1f2d3d;
   font-weight: 700;
   background: #f5f7fa;
   border: none;
-  max-width: 180px; /* 设置最大宽度，让按钮更精致 */
+  max-width: 160px; /* 进一步减少最大宽度 */
   margin: 0 auto;
-  font-size: 14px; /* 稍微减小字体 */
+  font-size: 12px; /* 进一步减小字体 */
   transition: all 0.2s ease; /* 添加过渡效果 */
   /* 确保按钮容器宽度一致 */
   box-sizing: border-box;
@@ -610,16 +610,16 @@ const currentOrders = computed(() => allOrders.value)
 
 /* 我的运单区 */
 .my-orders {
-  padding-bottom: 20px;
-  margin-top: 16px; /* 缩小与上方快捷操作的间距从20px改为16px */
+  padding-bottom: 14px; /* 进一步减少底部内边距 */
+  margin-top: 10px; /* 进一步缩小与上方快捷操作的间距 */
   /* 确保宽度一致 */
   width: 100%;
   box-sizing: border-box;
 }
 
 .section-title {
-  padding: 16px 16px 12px;
-  font-size: 18px;
+  padding: 12px 16px 8px; /* 进一步减少内边距 */
+  font-size: 16px; /* 进一步减小字体 */
   font-weight: 700;
   color: #1f2d3d;
 }
@@ -629,14 +629,14 @@ const currentOrders = computed(() => allOrders.value)
 }
 
 .orders-list {
-  padding: 12px 16px 16px;
+  padding: 8px 16px 12px; /* 进一步减少内边距 */
 }
 
 .order-item {
   border: 1px solid #eef2f7;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 10px; /* 进一步减少底部间距 */
   background: #ffffff;
 }
 
@@ -645,36 +645,36 @@ const currentOrders = computed(() => allOrders.value)
   align-items: center;
   justify-content: space-between;
   background: #e9f3ff;
-  padding: 12px 16px;
+  padding: 8px 16px; /* 进一步减少内边距 */
 }
 
 .oi-title {
-  font-size: 13px;
+  font-size: 11px; /* 进一步减小字体 */
   color: #5e6a73;
 }
 
 .oi-value {
-  font-size: 13px;
+  font-size: 11px; /* 进一步减小字体 */
   color: #2b2f36;
   font-weight: 600;
 }
 
 .oi-body { 
-  padding: 16px; 
+  padding: 12px; /* 进一步减少内边距 */
 }
 
 .oi-route {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 13px; /* 进一步减小字体 */
   color: #1f2d3d;
   font-weight: 600;
 }
 
 .oi-extra {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 5px; /* 进一步减少顶部间距 */
+  font-size: 11px; /* 进一步减小字体 */
   color: #6b7683;
 }
 
