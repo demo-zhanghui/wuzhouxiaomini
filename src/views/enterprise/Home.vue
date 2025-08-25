@@ -349,6 +349,11 @@ onMounted(() => {
   padding: 16px;
 }
 
+/* 【新增】确保平台资讯与底部导航栏不重叠 */
+.news-section {
+  margin-bottom: 80px;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;

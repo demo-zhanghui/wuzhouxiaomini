@@ -1,174 +1,160 @@
 <template>
   <div class="enterprise-workbench">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1 class="page-title">企业工作台</h1>
-      <div class="header-actions">
-        <van-icon name="setting-o" size="20" @click="handleSettings" />
+    <!-- 模块一：顶部欢迎与角色切换区 (非卡片) -->
+    <div class="welcome-section">
+      <div class="welcome-left">
+        <div class="welcome-text">曹益坤，欢迎你</div>
+        <div class="role-text">体验管理员</div>
+      </div>
+      <div class="welcome-right">
+        <van-dropdown-menu>
+          <van-dropdown-item 
+            v-model="currentEnterprise" 
+            :options="enterpriseOptions"
+            @change="handleEnterpriseChange"
+          />
+        </van-dropdown-menu>
       </div>
     </div>
 
-    <!-- 工作台内容 -->
-    <div class="workbench-content">
-      <!-- 关键业务数据卡片 -->
-      <div class="data-card">
-        <div class="card-header">
-          <div class="card-title">
-            <van-icon name="bar-chart-o" size="18" />
-            <span>关键业务数据</span>
-          </div>
-          <div class="card-status">
-            <van-loading size="14" />
-            <span>数据正在加载中...</span>
+    <!-- 模块二：系统通知区 (非卡片) -->
+    <div class="notice-section">
+      <van-notice-bar
+        left-icon="volume-o"
+        text="系统将于今晚23:00进行升级维护，请提前做好准备。"
+        color="#1989fa"
+        background="#f0f9ff"
+      />
+    </div>
+
+    <!-- 模块三：常用应用区 (白色卡片，聚焦运输) -->
+    <div class="app-section">
+      <div class="section-header">
+        <div class="section-title">常用应用</div>
+        <van-icon name="setting-o" size="18" color="#969799" />
+      </div>
+      <van-grid :column-num="4" :border="false">
+        <van-grid-item 
+          v-for="app in transportApps" 
+          :key="app.id"
+          :icon="app.icon"
+          :text="app.name"
+          @click="handleAppClick(app)"
+        />
+      </van-grid>
+    </div>
+
+    <!-- 模块四：我的待办区 (白色卡片，聚焦运输) -->
+    <div class="todo-section">
+      <div class="section-header">
+        <div class="section-title">我的待办</div>
+      </div>
+      <van-cell-group>
+        <van-cell
+          v-for="todo in transportTodos"
+          :key="todo.id"
+          :title="todo.title"
+          is-link
+          @click="handleTodoClick(todo)"
+        >
+          <template #right-icon>
+            <van-badge :content="todo.count" :show="todo.count > 0" />
+          </template>
+        </van-cell>
+      </van-cell-group>
+    </div>
+
+    <!-- 模块五：推广/内容区 (通栏Banner) -->
+    <div class="banner-section">
+      <van-image
+        src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=400&h=120&fit=crop&crop=center"
+        width="100%"
+        height="120"
+        radius="8"
+        fit="cover"
+      />
+    </div>
+
+    <!-- 模块六：数据总览区 (白色卡片，聚焦运输) -->
+    <div class="overview-section">
+      <div class="section-header">
+        <div class="section-title">数据总览</div>
+        <div class="section-more" @click="handleMoreOverview">
+          更多 <van-icon name="arrow" size="12" />
+        </div>
+      </div>
+      
+      <!-- 运输执行总览 -->
+      <div class="overview-card">
+        <div class="overview-header">
+          <div class="overview-title">运输执行总览</div>
+          <div class="update-time">更新于 2分钟前</div>
+        </div>
+        <div class="chart-placeholder">
+          <div class="gauge-chart">
+            <div class="gauge-circle">
+              <div class="gauge-value">98.5%</div>
+              <div class="gauge-label">准时率</div>
+            </div>
           </div>
         </div>
-        <div class="card-content placeholder">
-          <div class="placeholder-grid">
-            <div class="placeholder-item">
-              <div class="placeholder-value">--</div>
-              <div class="placeholder-label">今日订单</div>
-            </div>
-            <div class="placeholder-item">
-              <div class="placeholder-value">--</div>
-              <div class="placeholder-label">运输中</div>
-            </div>
-            <div class="placeholder-item">
-              <div class="placeholder-value">--</div>
-              <div class="placeholder-label">已完成</div>
-            </div>
-            <div class="placeholder-item">
-              <div class="placeholder-value">--</div>
-              <div class="placeholder-label">营业额</div>
-            </div>
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-value">152</div>
+            <div class="kpi-label">在途运单数</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-value">89</div>
+            <div class="kpi-label">今日完成</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-value">2.5天</div>
+            <div class="kpi-label">平均运输时长</div>
           </div>
         </div>
       </div>
 
-      <!-- 在途运单监控卡片 -->
-      <div class="data-card">
-        <div class="card-header">
-          <div class="card-title">
-            <van-icon name="location-o" size="18" />
-            <span>在途运单监控</span>
-          </div>
-          <div class="card-status coming-soon">
-            <van-icon name="clock-o" size="14" />
-            <span>地图模块即将上线...</span>
-          </div>
+      <!-- 运输成本分析 -->
+      <div class="overview-card">
+        <div class="overview-header">
+          <div class="overview-title">运输成本分析</div>
+          <div class="update-time">更新于 5分钟前</div>
         </div>
-        <div class="card-content placeholder">
-          <div class="map-placeholder">
-            <div class="map-icon">
-              <van-icon name="location" size="48" color="#1989fa" />
+        <div class="chart-placeholder">
+          <div class="pie-chart">
+            <div class="pie-circle">
+              <div class="pie-segment fuel"></div>
+              <div class="pie-segment labor"></div>
+              <div class="pie-segment maintenance"></div>
             </div>
-            <div class="map-text">
-              <h3>实时地图监控</h3>
-              <p>在途车辆位置追踪</p>
-              <p>运输路径优化分析</p>
-              <p>异常情况实时预警</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 财务总览卡片 -->
-      <div class="data-card">
-        <div class="card-header">
-          <div class="card-title">
-            <van-icon name="balance-list-o" size="18" />
-            <span>财务总览</span>
-          </div>
-          <div class="card-status coming-soon">
-            <van-icon name="star-o" size="14" />
-            <span>敬请期待...</span>
-          </div>
-        </div>
-        <div class="card-content placeholder">
-          <div class="finance-placeholder">
-            <div class="finance-grid">
-              <div class="finance-item">
-                <div class="finance-icon">
-                  <van-icon name="gold-coin-o" size="24" color="#ff976a" />
-                </div>
-                <div class="finance-info">
-                  <div class="finance-label">应收账款</div>
-                  <div class="finance-value">即将开放</div>
-                </div>
+            <div class="pie-legend">
+              <div class="legend-item">
+                <span class="legend-color fuel"></span>
+                <span>燃油费 45%</span>
               </div>
-              <div class="finance-item">
-                <div class="finance-icon">
-                  <van-icon name="credit-pay" size="24" color="#07c160" />
-                </div>
-                <div class="finance-info">
-                  <div class="finance-label">已收款项</div>
-                  <div class="finance-value">即将开放</div>
-                </div>
+              <div class="legend-item">
+                <span class="legend-color labor"></span>
+                <span>人工费 35%</span>
               </div>
-              <div class="finance-item">
-                <div class="finance-icon">
-                  <van-icon name="coupon-o" size="24" color="#1989fa" />
-                </div>
-                <div class="finance-info">
-                  <div class="finance-label">成本分析</div>
-                  <div class="finance-value">即将开放</div>
-                </div>
+              <div class="legend-item">
+                <span class="legend-color maintenance"></span>
+                <span>维护费 20%</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- 快捷操作卡片 -->
-      <div class="data-card">
-        <div class="card-header">
-          <div class="card-title">
-            <van-icon name="apps-o" size="18" />
-            <span>快捷操作</span>
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-value">¥1,250,800</div>
+            <div class="kpi-label">总成本</div>
           </div>
-        </div>
-        <div class="card-content">
-          <div class="quick-actions">
-            <div 
-              v-for="action in quickActions" 
-              :key="action.id"
-              class="action-item"
-              @click="handleQuickAction(action)"
-            >
-              <div class="action-icon">
-                <van-icon :name="action.icon" size="20" :color="action.color" />
-              </div>
-              <div class="action-text">{{ action.title }}</div>
-            </div>
+          <div class="kpi-item">
+            <div class="kpi-value">¥280</div>
+            <div class="kpi-label">百公里成本</div>
           </div>
-        </div>
-      </div>
-
-      <!-- 系统通知卡片 -->
-      <div class="data-card">
-        <div class="card-header">
-          <div class="card-title">
-            <van-icon name="bell" size="18" />
-            <span>系统通知</span>
-          </div>
-          <div class="card-more" @click="handleMoreNotifications">
-            <span>查看全部</span>
-            <van-icon name="arrow" size="12" />
-          </div>
-        </div>
-        <div class="card-content">
-          <div class="notification-list">
-            <div 
-              v-for="notification in notifications" 
-              :key="notification.id"
-              class="notification-item"
-              @click="handleNotificationClick(notification)"
-            >
-              <div class="notification-dot" :class="notification.type"></div>
-              <div class="notification-content">
-                <div class="notification-title">{{ notification.title }}</div>
-                <div class="notification-time">{{ notification.time }}</div>
-              </div>
-            </div>
+          <div class="kpi-item">
+            <div class="kpi-value">燃油费</div>
+            <div class="kpi-label">主要成本项</div>
           </div>
         </div>
       </div>
@@ -177,324 +163,332 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { showToast } from 'vant'
 
-// 快捷操作数据
-const quickActions = ref([
-  { id: 1, title: '发布货源', icon: 'add-o', color: '#1989fa' },
-  { id: 2, title: '调度派车', icon: 'logistics', color: '#ff976a' },
-  { id: 3, title: '查看报表', icon: 'bar-chart-o', color: '#07c160' },
-  { id: 4, title: '财务结算', icon: 'balance-list-o', color: '#ee0a24' }
+// 当前选中的企业
+const currentEnterprise = ref('enterprise1')
+
+// 企业选项
+const enterpriseOptions = ref([
+  { text: '体验企业', value: 'enterprise1' },
+  { text: '体验网点', value: 'enterprise2' },
+  { text: '测试企业', value: 'enterprise3' }
 ])
 
-// 系统通知数据
-const notifications = ref([
-  {
-    id: 1,
-    title: '您有3个待审批的运单异常',
-    time: '5分钟前',
-    type: 'urgent'
-  },
-  {
-    id: 2,
-    title: '系统将于今晚23:00-24:00进行维护',
-    time: '1小时前',
-    type: 'info'
-  },
-  {
-    id: 3,
-    title: '新功能"智能调度"已上线',
-    time: '2小时前',
-    type: 'success'
-  }
+// 运输相关应用
+const transportApps = ref([
+  { id: 1, name: '汽运计划', icon: 'logistics' },
+  { id: 2, name: '调度中心', icon: 'guide-o' },
+  { id: 3, name: '货源管理', icon: 'bag-o' },
+  { id: 4, name: '运单管理', icon: 'orders-o' },
+  { id: 5, name: '在途监控', icon: 'location-o' },
+  { id: 6, name: '司机管理', icon: 'contact' },
+  { id: 7, name: '车辆管理', icon: 'car-o' },
+  { id: 8, name: '结算中心', icon: 'balance-list-o' }
+])
+
+// 运输待办事项
+const transportTodos = ref([
+  { id: 1, title: '待指派', count: 12 },
+  { id: 2, title: '待接单', count: 8 },
+  { id: 3, title: '异常处理', count: 3 },
+  { id: 4, title: '待复核', count: 15 },
+  { id: 5, title: '待结算', count: 25 }
 ])
 
 // 事件处理函数
-const handleSettings = () => {
-  showToast('打开工作台设置')
+const handleEnterpriseChange = (value) => {
+  const selectedOption = enterpriseOptions.value.find(option => option.value === value)
+  showToast(`已切换至 ${selectedOption.text}，数据正在刷新...`)
 }
 
-const handleQuickAction = (action) => {
-  showToast(`执行操作：${action.title}`)
+const handleAppClick = (app) => {
+  showToast(`打开应用：${app.name}`)
 }
 
-const handleMoreNotifications = () => {
-  showToast('查看全部通知')
+const handleTodoClick = (todo) => {
+  showToast(`查看待办：${todo.title}`)
 }
 
-const handleNotificationClick = (notification) => {
-  showToast(`查看通知：${notification.title}`)
+const handleMoreOverview = () => {
+  showToast('查看更多数据总览')
 }
-
-onMounted(() => {
-  console.log('企业工作台已加载')
-})
 </script>
 
 <style scoped>
 .enterprise-workbench {
   background-color: #f7f8fa;
   min-height: 100vh;
+  padding-bottom: 20px;
 }
 
-.page-header {
+/* 模块一：顶部欢迎与角色切换区 */
+.welcome-section {
   background: white;
-  padding: 16px;
+  padding: 20px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
 }
 
-.page-title {
+.welcome-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.welcome-text {
   font-size: 18px;
   font-weight: 600;
   color: #323233;
-  margin: 0;
 }
 
-.header-actions {
+.role-text {
+  font-size: 14px;
   color: #969799;
-  cursor: pointer;
 }
 
-.workbench-content {
-  padding: 12px 16px;
+.welcome-right {
+  min-width: 120px;
 }
 
-.data-card {
+/* 模块二：系统通知区 */
+.notice-section {
+  margin: 0 16px 12px 16px;
+}
+
+/* 模块三：常用应用区 */
+.app-section {
   background: white;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin: 0 16px 12px 16px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.card-header {
-  padding: 16px;
-  border-bottom: 1px solid #ebedf0;
+.section-header {
+  padding: 16px 16px 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.card-title {
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.section-more {
+  font-size: 14px;
+  color: #1989fa;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+/* 模块四：我的待办区 */
+.todo-section {
+  background: white;
+  border-radius: 8px;
+  margin: 0 16px 12px 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 模块五：推广/内容区 */
+.banner-section {
+  margin: 0 16px 12px 16px;
+}
+
+/* 模块六：数据总览区 */
+.overview-section {
+  background: white;
+  border-radius: 8px;
+  margin: 0 16px 12px 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.overview-card {
+  padding: 16px;
+  border-bottom: 1px solid #ebedf0;
+}
+
+.overview-card:last-child {
+  border-bottom: none;
+}
+
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.overview-title {
   font-size: 15px;
   font-weight: 500;
   color: #323233;
 }
 
-.card-status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.update-time {
   font-size: 12px;
   color: #969799;
 }
 
-.card-status.coming-soon {
-  color: #1989fa;
+.chart-placeholder {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
 }
 
-.card-more {
+/* 仪表盘图表样式 */
+.gauge-chart {
+  position: relative;
+  width: 120px;
+  height: 80px;
+}
+
+.gauge-circle {
+  width: 120px;
+  height: 60px;
+  border-radius: 60px 60px 0 0;
+  background: conic-gradient(from 0deg, #07c160 0deg, #07c160 315deg, #ebedf0 315deg, #ebedf0 360deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.gauge-circle::before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 40px;
+  border-radius: 40px 40px 0 0;
+  background: white;
+}
+
+.gauge-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #07c160;
+  z-index: 1;
+}
+
+.gauge-label {
+  font-size: 12px;
+  color: #969799;
+  z-index: 1;
+}
+
+/* 环形图样式 */
+.pie-chart {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #1989fa;
-  cursor: pointer;
-}
-
-.card-content {
-  padding: 16px;
-}
-
-.card-content.placeholder {
-  background: #fafbfc;
-  border: 1px dashed #dcdee0;
-  margin: 16px;
-  border-radius: 8px;
-  padding: 24px;
-}
-
-.placeholder-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
-.placeholder-item {
-  text-align: center;
-}
-
-.placeholder-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #c8c9cc;
-  margin-bottom: 4px;
-}
-
-.placeholder-label {
-  font-size: 12px;
-  color: #969799;
-}
-
-.map-placeholder {
-  text-align: center;
-  padding: 20px 0;
-}
-
-.map-icon {
-  margin-bottom: 16px;
-}
-
-.map-text h3 {
-  font-size: 16px;
-  font-weight: 500;
-  color: #323233;
-  margin: 0 0 12px 0;
-}
-
-.map-text p {
-  font-size: 13px;
-  color: #646566;
-  margin: 4px 0;
-  line-height: 1.4;
-}
-
-.finance-placeholder {
-  padding: 12px 0;
-}
-
-.finance-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.finance-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #f7f8fa;
-  border-radius: 8px;
-}
-
-.finance-icon {
-  width: 40px;
-  height: 40px;
-  background: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.finance-info {
-  flex: 1;
-}
-
-.finance-label {
-  font-size: 13px;
-  color: #646566;
-  margin-bottom: 2px;
-}
-
-.finance-value {
-  font-size: 14px;
-  color: #969799;
-  font-weight: 500;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.action-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 8px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.action-item:hover {
-  background: #f7f8fa;
-}
-
-.action-icon {
-  width: 44px;
-  height: 44px;
-  background: #f7f8fa;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.action-text {
-  font-size: 12px;
-  color: #646566;
-  text-align: center;
-}
-
-.notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 8px 0;
-  cursor: pointer;
-}
-
-.notification-dot {
-  width: 8px;
-  height: 8px;
+.pie-circle {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  margin-top: 6px;
-  flex-shrink: 0;
+  background: conic-gradient(
+    from 0deg,
+    #ff976a 0deg,
+    #ff976a 162deg,
+    #1989fa 162deg,
+    #1989fa 306deg,
+    #07c160 306deg,
+    #07c160 360deg
+  );
+  position: relative;
 }
 
-.notification-dot.urgent {
-  background: #ee0a24;
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.notification-dot.info {
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #646566;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-color.fuel {
+  background: #ff976a;
+}
+
+.legend-color.labor {
   background: #1989fa;
 }
 
-.notification-dot.success {
+.legend-color.maintenance {
   background: #07c160;
 }
 
-.notification-content {
-  flex: 1;
+/* KPI网格样式 */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-.notification-title {
-  font-size: 14px;
+.kpi-item {
+  text-align: center;
+  padding: 12px 8px;
+  background: #f7f8fa;
+  border-radius: 6px;
+}
+
+.kpi-value {
+  font-size: 16px;
+  font-weight: 600;
   color: #323233;
-  line-height: 1.4;
   margin-bottom: 4px;
 }
 
-.notification-time {
+.kpi-label {
   font-size: 12px;
   color: #969799;
+}
+
+/* 响应式调整 */
+@media (max-width: 375px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .gauge-chart {
+    width: 100px;
+    height: 70px;
+  }
+  
+  .gauge-circle {
+    width: 100px;
+    height: 50px;
+    border-radius: 50px 50px 0 0;
+  }
+  
+  .gauge-circle::before {
+    width: 70px;
+    height: 35px;
+    border-radius: 35px 35px 0 0;
+  }
 }
 </style>
