@@ -1,19 +1,18 @@
+<!--
+  企业空间首页 - 完整功能版本
+  核心特性：
+  1. 紧凑型布局设计
+  2. 高效信息展示
+  3. 双场景市场切换
+  4. 专业视觉风格
+-->
+
 <template>
   <div class="enterprise-home">
-    <!-- 顶部搜索栏 -->
-    <div class="search-header">
-      <van-search
-        v-model="searchValue"
-        placeholder="搜索资讯、公告、货源、运力..."
-        @search="handleSearch"
-        @click="handleSearchClick"
-      />
-    </div>
-
-    <!-- 轮播Banner区 -->
+    <!-- 模块一：轮播Banner区 -->
     <div class="banner-section">
-      <van-swipe :autoplay="3000" indicator-color="white">
-        <van-swipe-item v-for="(banner, index) in banners" :key="index">
+      <van-swipe :autoplay="3000" indicator-color="white" class="banner-swipe">
+        <van-swipe-item v-for="banner in banners" :key="banner.id">
           <div class="banner-item" @click="handleBannerClick(banner)">
             <img :src="banner.image" :alt="banner.title" />
             <div class="banner-overlay">
@@ -25,25 +24,159 @@
       </van-swipe>
     </div>
 
-    <!-- 金刚区/快捷入口 -->
-    <div class="quick-access">
-      <div class="section-title">快捷入口</div>
-      <div class="access-grid">
-        <div 
-          v-for="item in quickAccess" 
-          :key="item.id"
-          class="access-item"
-          @click="handleQuickAccess(item)"
-        >
-          <div class="access-icon">
-            <van-icon :name="item.icon" size="24" />
+    <!-- 模块二：核心功能入口区 -->
+    <div class="function-section">
+      <van-grid :column-num="3" :border="false" class="function-grid">
+        <van-grid-item v-for="item in functionItems" :key="item.id" @click="handleFunctionClick(item)">
+          <div class="function-item">
+            <van-icon :name="item.icon" size="24" class="function-icon" />
+            <div class="function-title">{{ item.title }}</div>
+            <div class="function-subtitle">{{ item.subtitle }}</div>
           </div>
-          <div class="access-text">{{ item.title }}</div>
+        </van-grid-item>
+      </van-grid>
+    </div>
+
+    <!-- 模块三：超级市场模块 -->
+    <div class="market-section">
+      <!-- 并排式切换标题区 -->
+      <div class="market-header">
+        <div class="market-title">
+          {{ activeMarket === 'source' ? '推荐运单' : '推荐运力' }}
+        </div>
+        <div class="market-switcher">
+          <van-button 
+            size="small" 
+            round 
+            :type="activeMarket === 'source' ? 'primary' : 'default'"
+            @click="switchMarket('source')"
+          >
+            找货源
+          </van-button>
+          <van-button 
+            size="small" 
+            round 
+            :type="activeMarket === 'carrier' ? 'primary' : 'default'"
+            @click="switchMarket('carrier')"
+          >
+            找运力
+          </van-button>
+        </div>
+      </div>
+
+      <!-- 二级筛选器 -->
+      <div class="filter-section">
+        <div v-if="activeMarket === 'source'" class="source-filter">
+          <van-tag type="primary" size="medium">智能模式</van-tag>
+          <van-tag type="default" size="medium">价格优先</van-tag>
+          <van-tag type="default" size="medium">时效优先</van-tag>
+        </div>
+        <div v-else class="carrier-filter">
+          <van-tag type="primary" size="medium">平台推荐</van-tag>
+          <van-tag type="default" size="medium">评分优先</van-tag>
+          <van-tag type="default" size="medium">距离优先</van-tag>
+        </div>
+      </div>
+
+      <!-- 条件化渲染区 -->
+      <div class="market-content">
+        <!-- 找货源：货物信息卡片列表 -->
+        <div v-if="activeMarket === 'source'" class="source-list">
+          <div 
+            v-for="order in recommendedOrders" 
+            :key="order.id"
+            class="source-card"
+            @click="handleSourceClick(order)"
+          >
+            <div class="source-header">
+              <div class="source-route">{{ order.route }}</div>
+              <div class="source-price">{{ order.price }}</div>
+            </div>
+            <div class="source-details">
+              <div class="detail-item">
+                <span class="detail-label">货物类型：</span>
+                <span class="detail-value">{{ order.cargoType }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">重量：</span>
+                <span class="detail-value">{{ order.weight }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">发车时间：</span>
+                <span class="detail-value">{{ order.departureTime }}</span>
+              </div>
+            </div>
+            <div class="source-actions">
+              <van-button size="small" type="primary">立即接单</van-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 找运力：承运企业卡片列表 -->
+        <div v-else class="carrier-list">
+          <div 
+            v-for="carrier in recommendedCarriers" 
+            :key="carrier.id"
+            class="carrier-card"
+            @click="handleCarrierClick(carrier)"
+          >
+            <div class="carrier-header">
+              <div class="carrier-info">
+                <div class="carrier-name">{{ carrier.name }}</div>
+                <div class="carrier-rating">
+                  <div class="rating-stars">
+                    <van-icon 
+                      v-for="star in 5" 
+                      :key="star"
+                      :name="star <= carrier.rating ? 'star' : 'star-o'"
+                      :color="star <= carrier.rating ? '#ffd700' : '#c8c9cc'"
+                      size="12"
+                    />
+                  </div>
+                  <span class="rating-text">{{ carrier.rating }}分</span>
+                </div>
+              </div>
+              <div class="carrier-status">
+                <van-tag :type="carrier.status === 'online' ? 'success' : 'default'" size="small">
+                  {{ carrier.status === 'online' ? '在线' : '离线' }}
+                </van-tag>
+              </div>
+            </div>
+            
+            <div class="carrier-details">
+              <div class="detail-item">
+                <span class="detail-label">车辆类型：</span>
+                <span class="detail-value">{{ carrier.vehicleType }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">载重量：</span>
+                <span class="detail-value">{{ carrier.capacity }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">当前位置：</span>
+                <span class="detail-value">{{ carrier.location }}</span>
+              </div>
+            </div>
+            
+            <!-- 隔离容器：企业信息区 -->
+            <div class="carrier-enterprise">
+              <div class="enterprise-info">
+                <div class="enterprise-name">{{ carrier.enterpriseName }}</div>
+                <div class="enterprise-meta">
+                  <span class="meta-item">{{ carrier.enterpriseType }}</span>
+                  <span class="meta-item">{{ carrier.enterpriseScale }}</span>
+                </div>
+              </div>
+              <div class="enterprise-actions">
+                <van-button size="small" type="primary">联系企业</van-button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 平台资讯模块 -->
+    <!-- 模块四：平台资讯 -->
     <div class="news-section">
       <div class="section-header">
         <div class="section-title">平台资讯</div>
@@ -69,50 +202,15 @@
         </div>
       </div>
     </div>
-
-    <!-- 货源/运力广场模块 -->
-    <div class="market-section">
-      <div class="section-header">
-        <div class="section-title">{{ marketTitle }}</div>
-        <div class="more-btn" @click="handleMoreMarket">更多</div>
-      </div>
-      <div class="market-list">
-        <div 
-          v-for="item in marketList" 
-          :key="item.id"
-          class="market-item"
-          @click="handleMarketClick(item)"
-        >
-          <div class="market-header">
-            <div class="market-route">{{ item.route }}</div>
-            <div class="market-price">{{ item.price }}</div>
-          </div>
-          <div class="market-details">
-            <div class="detail-item">
-              <span class="detail-label">{{ item.typeLabel }}：</span>
-              <span class="detail-value">{{ item.typeValue }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">时间：</span>
-              <span class="detail-value">{{ item.time }}</span>
-            </div>
-          </div>
-          <div class="market-actions">
-            <van-button size="small" type="primary">{{ item.actionText }}</van-button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { showToast } from 'vant'
-import { store } from '@/store'
 
 // 响应式数据
-const searchValue = ref('')
+const activeMarket = ref('source') // 默认显示找货源
 
 // 轮播Banner数据
 const banners = ref([
@@ -136,16 +234,97 @@ const banners = ref([
   }
 ])
 
-// 快捷入口数据
-const quickAccess = ref([
-  { id: 1, title: '发布货源', icon: 'add-o' },
-  { id: 2, title: '运单管理', icon: 'orders-o' },
-  { id: 3, title: '调度派车', icon: 'logistics' },
-  { id: 4, title: '财务结算', icon: 'balance-list-o' },
-  { id: 5, title: '数据报表', icon: 'bar-chart-o' }
+// 核心功能入口数据
+const functionItems = ref([
+  { 
+    id: 1, 
+    title: '找货源', 
+    subtitle: '海量货源信息',
+    icon: 'search' 
+  },
+  { 
+    id: 2, 
+    title: '发布运力', 
+    subtitle: '快速发布运力',
+    icon: 'add-o' 
+  },
+  { 
+    id: 3, 
+    title: '车务市场', 
+    subtitle: '车辆管理服务',
+    icon: 'logistics' 
+  }
 ])
 
-// 资讯列表数据
+// 推荐运单数据（找货源）
+const recommendedOrders = ref([
+  {
+    id: 1,
+    route: '北京 → 上海',
+    price: '￥3,500',
+    cargoType: '电子产品',
+    weight: '2.5吨',
+    departureTime: '2024-01-16 发车'
+  },
+  {
+    id: 2,
+    route: '广州 → 深圳',
+    price: '￥1,200',
+    cargoType: '服装鞋帽',
+    weight: '1.8吨',
+    departureTime: '2024-01-16 发车'
+  },
+  {
+    id: 3,
+    route: '成都 → 重庆',
+    price: '￥800',
+    cargoType: '食品饮料',
+    weight: '1.2吨',
+    departureTime: '2024-01-17 发车'
+  }
+])
+
+// 推荐运力数据（找运力）
+const recommendedCarriers = ref([
+  {
+    id: 1,
+    name: '张师傅',
+    rating: 4.8,
+    status: 'online',
+    vehicleType: '厢式货车',
+    capacity: '3吨',
+    location: '北京市朝阳区',
+    enterpriseName: '北京快运物流有限公司',
+    enterpriseType: '物流企业',
+    enterpriseScale: '100-499人'
+  },
+  {
+    id: 2,
+    name: '李师傅',
+    rating: 4.6,
+    status: 'online',
+    vehicleType: '平板车',
+    capacity: '5吨',
+    location: '上海市浦东新区',
+    enterpriseName: '上海通达运输集团',
+    enterpriseType: '运输集团',
+    enterpriseScale: '500-999人'
+  },
+  {
+    id: 3,
+    name: '王师傅',
+    rating: 4.9,
+    status: 'offline',
+    vehicleType: '冷藏车',
+    capacity: '2吨',
+    location: '广州市天河区',
+    enterpriseName: '广州冷链物流公司',
+    enterpriseType: '专业物流',
+    enterpriseScale: '50-99人'
+  }
+])
+
+// 平台资讯数据
 const newsList = ref([
   {
     id: 1,
@@ -169,57 +348,25 @@ const newsList = ref([
   }
 ])
 
-// 市场数据（根据角色动态显示）
-const marketList = ref([
-  {
-    id: 1,
-    route: '北京 → 上海',
-    price: '￥3,500',
-    typeLabel: '货物类型',
-    typeValue: '电子产品',
-    time: '2024-01-16 发车',
-    actionText: '查看详情'
-  },
-  {
-    id: 2,
-    route: '广州 → 深圳',
-    price: '￥1,200',
-    typeLabel: '车辆要求',
-    typeValue: '厢式货车',
-    time: '2024-01-16 发车',
-    actionText: '立即接单'
-  },
-  {
-    id: 3,
-    route: '成都 → 重庆',
-    price: '￥800',
-    typeLabel: '货物类型',
-    typeValue: '食品饮料',
-    time: '2024-01-17 发车',
-    actionText: '查看详情'
-  }
-])
-
-// 计算属性 - 市场模块标题
-const marketTitle = computed(() => {
-  return store.currentWorkspace === 'enterprise' ? '货源广场' : '运力推荐'
-})
-
 // 事件处理函数
-const handleSearch = (value) => {
-  showToast(`搜索：${value}`)
-}
-
-const handleSearchClick = () => {
-  showToast('跳转到搜索页面')
+const switchMarket = (market) => {
+  activeMarket.value = market
 }
 
 const handleBannerClick = (banner) => {
   showToast(`点击Banner：${banner.title}`)
 }
 
-const handleQuickAccess = (item) => {
+const handleFunctionClick = (item) => {
   showToast(`点击：${item.title}`)
+}
+
+const handleSourceClick = (order) => {
+  showToast(`查看运单：${order.route}`)
+}
+
+const handleCarrierClick = (carrier) => {
+  showToast(`查看运力：${carrier.name}`)
 }
 
 const handleMoreNews = () => {
@@ -230,36 +377,29 @@ const handleNewsClick = (news) => {
   showToast(`查看资讯：${news.title}`)
 }
 
-const handleMoreMarket = () => {
-  showToast('查看更多市场信息')
-}
-
-const handleMarketClick = (item) => {
-  showToast(`查看详情：${item.route}`)
-}
-
 onMounted(() => {
   console.log('企业首页已加载')
 })
 </script>
 
 <style scoped>
+/* 全局样式 */
 .enterprise-home {
   background-color: #f7f8fa;
   min-height: 100vh;
+  padding-bottom: 80px; /* 为底部导航栏留出空间 */
 }
 
-.search-header {
-  background: white;
-  padding: 12px 16px 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
+/* 模块一：轮播Banner区 */
 .banner-section {
-  margin: 12px 16px;
+  margin: 16px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.banner-swipe {
+  border-radius: 8px;
 }
 
 .banner-item {
@@ -296,27 +436,19 @@ onMounted(() => {
   opacity: 0.9;
 }
 
-.quick-access {
+/* 模块二：核心功能入口区 */
+.function-section {
+  margin: 0 16px 16px;
+}
+
+.function-grid {
   background: white;
-  margin: 12px 16px;
   border-radius: 8px;
   padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #323233;
-  margin-bottom: 12px;
-}
-
-.access-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-}
-
-.access-item {
+.function-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -324,34 +456,228 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.access-icon {
-  width: 44px;
-  height: 44px;
-  background: #f0f8ff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
+.function-icon {
   color: #1989fa;
+  margin-bottom: 8px;
 }
 
-.access-text {
-  font-size: 12px;
-  color: #646566;
+.function-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 4px;
+}
+
+.function-subtitle {
+  font-size: 11px;
+  color: #969799;
   text-align: center;
 }
 
-.news-section, .market-section {
+/* 模块三：超级市场模块 */
+.market-section {
   background: white;
-  margin: 12px 16px;
+  margin: 0 16px 16px;
   border-radius: 8px;
   padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 【新增】确保平台资讯与底部导航栏不重叠 */
+.market-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.market-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.market-switcher {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-section {
+  margin-bottom: 16px;
+}
+
+.source-filter,
+.carrier-filter {
+  display: flex;
+  gap: 8px;
+}
+
+/* 找货源：货物信息卡片 */
+.source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.source-card {
+  border: 1px solid #ebedf0;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.source-card:hover {
+  border-color: #1989fa;
+  box-shadow: 0 2px 8px rgba(25, 137, 250, 0.1);
+}
+
+.source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.source-route {
+  font-size: 15px;
+  font-weight: 500;
+  color: #323233;
+}
+
+.source-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ee0a24;
+}
+
+.source-details {
+  margin-bottom: 12px;
+}
+
+.detail-item {
+  font-size: 13px;
+  color: #646566;
+  margin-bottom: 4px;
+}
+
+.detail-label {
+  color: #969799;
+}
+
+.detail-value {
+  color: #323233;
+}
+
+.source-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 找运力：承运企业卡片 */
+.carrier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.carrier-card {
+  border: 1px solid #ebedf0;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.carrier-card:hover {
+  border-color: #1989fa;
+  box-shadow: 0 2px 8px rgba(25, 137, 250, 0.1);
+}
+
+.carrier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.carrier-info {
+  flex: 1;
+}
+
+.carrier-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 4px;
+}
+
+.carrier-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #646566;
+}
+
+.carrier-details {
+  margin-bottom: 12px;
+}
+
+/* 隔离容器：企业信息区 */
+.carrier-enterprise {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 6px;
+  border: 1px solid #ebedf0;
+}
+
+.enterprise-info {
+  flex: 1;
+}
+
+.enterprise-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 4px;
+}
+
+.enterprise-meta {
+  display: flex;
+  gap: 8px;
+}
+
+.meta-item {
+  font-size: 11px;
+  color: #969799;
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #ebedf0;
+}
+
+.enterprise-actions {
+  flex-shrink: 0;
+}
+
+/* 模块四：平台资讯 */
 .news-section {
-  margin-bottom: 80px;
+  background: white;
+  margin: 0 16px;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .section-header {
@@ -359,6 +685,12 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #323233;
 }
 
 .more-btn {
@@ -432,64 +764,19 @@ onMounted(() => {
   object-fit: cover;
 }
 
-.market-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.market-item {
-  border: 1px solid #ebedf0;
-  border-radius: 8px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.market-item:hover {
-  border-color: #1989fa;
-  box-shadow: 0 2px 8px rgba(25, 137, 250, 0.1);
-}
-
-.market-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.market-route {
-  font-size: 15px;
-  font-weight: 500;
-  color: #323233;
-}
-
-.market-price {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ee0a24;
-}
-
-.market-details {
-  margin-bottom: 12px;
-}
-
-.detail-item {
-  font-size: 13px;
-  color: #646566;
-  margin-bottom: 4px;
-}
-
-.detail-label {
-  color: #969799;
-}
-
-.detail-value {
-  color: #323233;
-}
-
-.market-actions {
-  display: flex;
-  justify-content: flex-end;
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .enterprise-home {
+    padding-bottom: 70px;
+  }
+  
+  .banner-section,
+  .function-section,
+  .market-section,
+  .news-section {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
 }
 </style>
+
