@@ -28,17 +28,34 @@
         <div class="user-info">
           <div class="user-name-row">
             <h2 class="user-name">张师傅</h2>
-            <div class="tags-container">
-              <!-- 合并后的角色/空间切换器：单个蓝色标签 -->
-              <van-tag 
-                type="primary" 
-                round 
-                class="role-tag"
-                @click="showUnifiedSelector"
-              >
-                {{ getUnifiedDisplayText() }}
-              </van-tag>
-            </div>
+          </div>
+          <div class="tags-container">
+            <!-- 合并后的角色/空间切换器：单个蓝色标签 -->
+            <van-tag 
+              type="primary" 
+              size="small"
+              class="role-tag clickable-tag"
+              @click="showUnifiedSelector"
+            >
+              {{ getUnifiedDisplayText() }}
+            </van-tag>
+            <!-- 企业标签 -->
+            <van-tag 
+              v-if="store.userRole === 'driver' || store.userRole === 'shipOwner'"
+              size="small"
+              class="enterprise-tag"
+            >
+              {{ store.userRole === 'driver' ? '企业司机' : '企业船东' }}
+            </van-tag>
+            <!-- 认证标签 -->
+            <van-tag 
+              v-if="store.userRole === 'driver' || store.userRole === 'shipOwner'"
+              type="success" 
+              size="small"
+              class="certification-tag"
+            >
+              已认证
+            </van-tag>
           </div>
           <div class="user-stats">
             <span class="stat-item">完成 {{ achievements.totalTrips }} 次运输</span>
@@ -221,6 +238,18 @@
       </div>
     </div>
 
+    <!-- 退出登录 -->
+    <div class="logout-section">
+      <van-button 
+        type="danger" 
+        size="large" 
+        plain 
+        @click="handleLogout"
+      >
+        退出登录
+      </van-button>
+    </div>
+
     <!-- 统一切换动作面板：公路司机/水路船东/企业职员 -->
     <van-action-sheet
       v-model:show="showUnifiedSelectorSheet"
@@ -325,7 +354,7 @@ const getVehicleIcon = () => {
  */
 const getUnifiedDisplayText = () => {
   if (store.currentWorkspace === 'enterprise') {
-    return '企业职员'
+    return '企业员工'
   }
   return store.userRole === 'driver' ? '公路司机' : '水路船东'
 }
@@ -559,6 +588,34 @@ const handleHotline = () => {
     .catch(() => {})
 }
 
+/**
+ * 处理退出登录
+ */
+const handleLogout = async () => {
+  try {
+    const result = await showConfirmDialog({
+      title: '退出登录',
+      message: '确定要退出当前账户吗？',
+      confirmButtonText: '确定退出',
+      cancelButtonText: '取消'
+    })
+    
+    if (result === 'confirm') {
+      // 清除用户数据
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('currentWorkspace')
+      localStorage.removeItem('isLoggedIn')
+      
+      // 跳转到登录页
+      router.push('/login')
+      showToast('已退出登录')
+    }
+  } catch (error) {
+    // 用户取消操作
+    console.log('用户取消退出')
+  }
+}
+
 
 
 /**
@@ -693,6 +750,21 @@ onMounted(() => {
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+  margin-bottom: 12px;
+}
+
+/* 企业标签样式 */
+.enterprise-tag {
+  background-color: #e8f3ff !important;
+  color: #1989fa !important;
+  border-color: #1989fa !important;
+}
+
+/* 认证标签样式 */
+.certification-tag {
+  background-color: #f0f9ff !important;
+  color: #07c160 !important;
+  border-color: #07c160 !important;
 }
 
 .role-tag {
@@ -715,6 +787,24 @@ onMounted(() => {
 .role-tag:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(25, 137, 250, 0.2);
+}
+
+/* 可点击标签样式（与企业空间保持一致） */
+.clickable-tag {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.clickable-tag:hover {
+  transform: scale(1.05);
+}
+
+.clickable-tag::after {
+  content: '⇄';
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.8;
 }
 
 /* 工作空间标签样式 */
@@ -968,6 +1058,11 @@ onMounted(() => {
   font-size: 12px;
   color: #969799;
   margin-top: 2px;
+}
+
+/* 退出登录按钮样式 */
+.logout-section {
+  margin: 20px 16px;
 }
 
 /* 响应式设计 */

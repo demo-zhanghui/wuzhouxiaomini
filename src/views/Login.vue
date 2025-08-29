@@ -31,9 +31,42 @@
           <p class="app-subtitle">公路·水路·统一平台</p>
         </div>
 
-        <!-- 登录表单区域 -->
-        <div class="form-section">
-          <van-form @submit="handleLogin">
+        <!-- 登录方式选择器 -->
+        <div class="login-method-selector">
+          <!-- 快捷登录按钮 -->
+          <div class="login-button-section">
+            <van-button
+              round
+              block
+              type="primary"
+              size="large"
+              :loading="isQuickLoading"
+              class="quick-login-button"
+              @click="showPhoneSelector = true"
+            >
+              <van-icon name="wechat" size="18" />
+              {{ isQuickLoading ? '登录中...' : '快捷登录' }}
+            </van-button>
+          </div>
+
+          <!-- 账号密码登录按钮 -->
+          <div class="login-button-section">
+            <van-button
+              round
+              block
+              size="large"
+              class="password-login-button"
+              @click="showPasswordForm = true"
+            >
+              <van-icon name="user-o" size="18" />
+              账号密码登录
+            </van-button>
+          </div>
+        </div>
+
+        <!-- 账号密码登录表单 -->
+        <div v-if="showPasswordForm" class="password-login-form">
+          <van-form @submit="handlePasswordLogin">
             <!-- 账号输入框 -->
             <van-field
               v-model="formData.username"
@@ -54,7 +87,7 @@
               :rules="passwordRules"
               left-icon="lock"
               type="password"
-              maxlength="32"
+              maxlength="20"
             />
 
             <!-- 登录按钮 -->
@@ -65,13 +98,43 @@
                 type="primary"
                 native-type="submit"
                 :loading="isLoading"
-                class="login-button"
+                class="submit-button"
               >
                 {{ isLoading ? '登录中...' : '登录' }}
               </van-button>
             </div>
           </van-form>
+        </div>
 
+        <!-- 手机号选择弹窗 -->
+        <van-popup
+          v-model:show="showPhoneSelector"
+          position="bottom"
+          :style="{ height: '60%' }"
+          round
+          closeable
+        >
+          <div class="phone-selector-popup">
+            <h3 class="popup-title">选择登录手机号</h3>
+            <div class="phone-list">
+              <div 
+                v-for="phone in phoneList" 
+                :key="phone.number"
+                class="phone-item"
+                @click="selectPhone(phone)"
+              >
+                <div class="phone-info">
+                  <div class="phone-number">{{ phone.number }}</div>
+                  <div class="phone-desc">{{ phone.description }}</div>
+                </div>
+                <van-icon name="arrow" />
+              </div>
+            </div>
+          </div>
+        </van-popup>
+
+        <!-- 登录表单区域 -->
+        <div class="form-section">
           <!-- 服务协议 -->
           <div class="agreement-section">
             <van-checkbox v-model="agreedToTerms" icon-size="14px">
@@ -126,9 +189,97 @@ const formData = ref({
 })
 
 const isLoading = ref(false)
+const isQuickLoading = ref(false)
 const agreedToTerms = ref(true)
 const showAgreementPopup = ref(false)
 const currentAgreementType = ref('')
+const showPhoneSelector = ref(false) // 控制手机号选择弹窗
+const showPasswordForm = ref(false) // 控制账号密码表单
+
+// 手机号列表数据
+const phoneList = ref([
+  {
+    number: '138****8888',
+    description: '公路运输公司 - 张三',
+    type: 'road'
+  },
+  {
+    number: '139****9999', 
+    description: '水路运输公司 - 李四',
+    type: 'water'
+  },
+  {
+    number: '137****7777',
+    description: '综合物流公司 - 王五',
+    type: 'comprehensive'
+  }
+])
+
+/**
+ * 选择手机号进行快捷登录
+ */
+const selectPhone = async (phone) => {
+  // 关闭弹窗
+  showPhoneSelector.value = false
+  
+  // 开始加载
+  isQuickLoading.value = true
+  
+  try {
+    // 模拟网络请求延迟
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    // 根据手机号类型设置用户角色
+    let userRole = 'driver' // 默认公路司机
+    let roleName = '公路司机'
+    
+    switch (phone.type) {
+      case 'road':
+        userRole = 'driver'
+        roleName = '公路司机'
+        break
+      case 'water':
+        userRole = 'captain'
+        roleName = '水路船东'
+        break
+      case 'comprehensive':
+        userRole = 'manager'
+        roleName = '综合管理员'
+        break
+    }
+    
+    // 模拟快捷登录成功
+    localStorage.setItem('isLoggedIn', 'true')
+    localStorage.setItem('userRole', userRole)
+    
+    // 设置用户角色到全局状态
+    if (typeof store.setUserRole === 'function') {
+      store.setUserRole(userRole)
+    }
+    
+    showToast({ 
+      message: `快捷登录成功，欢迎${roleName}！`, 
+      duration: 1500 
+    })
+    
+    setTimeout(() => {
+      // 根据用户角色跳转到对应空间
+      if (userRole === 'driver' || userRole === 'captain') {
+        // 司机和船东跳转到跑货页面
+        router.replace('/main/paohuo')
+      } else {
+        // 企业管理员跳转到企业空间首页
+        router.replace('/enterprise/home')
+      }
+    }, 600)
+    
+  } catch (error) {
+    console.error('快捷登录失败:', error)
+    showToast('快捷登录失败，请重试')
+  } finally {
+    isQuickLoading.value = false
+  }
+}
 
 /**
  * 表单验证规则
@@ -197,9 +348,9 @@ const currentAgreementContent = computed(() => {
 // 已移除验证码逻辑
 
 /**
- * 处理登录提交（账号/密码）
+ * 处理账号密码登录
  */
-const handleLogin = async () => {
+const handlePasswordLogin = async () => {
   // 检查是否同意协议
   if (!agreedToTerms.value) {
     showToast('请先同意用户服务协议和隐私政策')
@@ -216,14 +367,20 @@ const handleLogin = async () => {
     // Demo规则：非空账号且密码≥6位即通过
     if (formData.value.username && formData.value.password && formData.value.password.length >= 6) {
       localStorage.setItem('isLoggedIn', 'true')
-      // 切换到企业空间
-      if (typeof store.switchWorkspace === 'function') {
-        store.switchWorkspace('enterprise')
-      } else if (typeof store.setCurrentWorkspace === 'function') {
-        store.setCurrentWorkspace('enterprise')
+      localStorage.setItem('userRole', 'driver') // 默认设置为公路司机
+      
+      // 设置用户角色到全局状态
+      if (typeof store.setUserRole === 'function') {
+        store.setUserRole('driver')
       }
-      showToast({ message: '登录成功，进入企业端', duration: 1500 })
+      
+      showToast({ 
+        message: `登录成功，欢迎公路司机！`, 
+        duration: 1500 
+      })
+      
       setTimeout(() => {
+        // 账号密码登录默认跳转到企业空间
         router.replace('/enterprise/home')
       }, 600)
     } else {
@@ -251,14 +408,24 @@ const showAgreement = (type) => {
  * 组件挂载时的初始化
  */
 onMounted(() => {
-  // 已登录则进入企业端
+  // 已登录则直接跳转
   if (localStorage.getItem('isLoggedIn') === 'true') {
-    if (typeof store.switchWorkspace === 'function') {
-      store.switchWorkspace('enterprise')
-    } else if (typeof store.setCurrentWorkspace === 'function') {
-      store.setCurrentWorkspace('enterprise')
+    const userRole = localStorage.getItem('userRole') || 'driver'
+    
+    // 设置用户角色到全局状态
+    if (typeof store.setUserRole === 'function') {
+      store.setUserRole(userRole)
     }
-    router.replace('/enterprise/home')
+    
+    // 根据用户角色跳转到对应空间
+    const currentUserRole = localStorage.getItem('userRole') || 'driver'
+    if (currentUserRole === 'driver' || currentUserRole === 'captain') {
+      // 司机和船东跳转到跑货页面
+      router.replace('/main/paohuo')
+    } else {
+      // 企业管理员跳转到企业空间首页
+      router.replace('/enterprise/home')
+    }
   }
   console.log('登录页面已加载')
 })
@@ -353,10 +520,108 @@ onMounted(() => {
 .form-section {
   background: white;
   border-radius: 24px 24px 0 0;
-  padding: 32px 24px 40px;
+  padding: 24px 24px 40px;
   margin: 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
+
+/* 登录方式选择器样式 */
+.login-method-selector {
+  padding: 0 24px;
+  margin-bottom: 32px;
+}
+
+.login-button-section {
+  margin-bottom: 16px;
+}
+
+.quick-login-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.password-login-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  background: #fff;
+  border: 2px solid #e8e8e8;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.password-login-button:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+/* 账号密码登录表单样式 */
+.password-login-form {
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+/* 手机号选择弹窗样式 */
+.phone-selector-popup {
+  padding: 24px;
+}
+
+.popup-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.phone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phone-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.phone-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+}
+
+.phone-info {
+  flex: 1;
+}
+
+.phone-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.phone-desc {
+  font-size: 12px;
+  color: #666;
+}
+
+.phone-item .van-icon {
+  color: #999;
+  font-size: 16px;
+}
+
+/* 已移除标签页相关样式 */
 
 /* 验证码按钮样式 */
 .code-button {
@@ -372,7 +637,7 @@ onMounted(() => {
   margin: 32px 0 24px;
 }
 
-.login-button {
+.submit-button {
   height: 48px;
   font-size: 16px;
   font-weight: 500;

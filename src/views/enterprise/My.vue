@@ -17,7 +17,8 @@
             <h3 class="username">{{ userInfo.name }}</h3>
             <div class="user-tags">
               <van-tag type="primary" size="small" @click="showUnifiedSelector" class="clickable-tag">{{ getUnifiedDisplayText() }}</van-tag>
-              <van-tag type="primary" size="small">{{ userInfo.certification }}</van-tag>
+              <van-tag size="small" class="enterprise-tag">企业职员</van-tag>
+              <van-tag type="success" size="small" class="certification-tag">{{ userInfo.certification }}</van-tag>
             </div>
             <div class="company-info">
               <van-icon name="shop-o" size="12" />
@@ -32,8 +33,31 @@
     </div>
 
 
-    <!-- 功能列表 -->
-    <div class="function-section">
+    <!-- 我的服务 -->
+    <div class="service-section">
+      <van-cell-group inset>
+        <div class="service-header">
+          <h3 class="service-title">常用应用</h3>
+        </div>
+        <van-grid :column-num="4" :border="false" class="service-grid">
+          <van-grid-item 
+            v-for="item in serviceList" 
+            :key="item.id"
+            :text="item.name"
+            @click="handleServiceClick(item)"
+          >
+            <template #icon>
+              <div class="service-icon" :style="{ backgroundColor: item.iconBg }">
+                <van-icon :name="item.icon" size="20" :color="item.iconColor" />
+              </div>
+            </template>
+          </van-grid-item>
+        </van-grid>
+      </van-cell-group>
+    </div>
+
+    <!-- 功能列表和系统功能合并 -->
+    <div class="function-system-section">
       <van-cell-group inset>
         <van-cell 
           v-for="item in functionList" 
@@ -49,12 +73,7 @@
             </div>
           </template>
         </van-cell>
-      </van-cell-group>
-    </div>
-
-    <!-- 系统功能 -->
-    <div class="system-section">
-      <van-cell-group inset>
+        
         <van-cell 
           v-for="item in systemList" 
           :key="item.id"
@@ -149,6 +168,66 @@ const functionList = ref([
   }
 ])
 
+// 我的服务列表
+const serviceList = ref([
+  {
+    id: 1,
+    name: '账户与安全',
+    icon: 'lock',
+    iconColor: '#1989fa',
+    iconBg: '#e8f3ff'
+  },
+  {
+    id: 2,
+    name: '企业信息',
+    icon: 'shop-o',
+    iconColor: '#07c160',
+    iconBg: '#f0f9ff'
+  },
+  {
+    id: 3,
+    name: '消息设置',
+    icon: 'bell',
+    iconColor: '#ff976a',
+    iconBg: '#fff7e6'
+  },
+  {
+    id: 4,
+    name: '帮助客服',
+    icon: 'service-o',
+    iconColor: '#7232dd',
+    iconBg: '#f3f0ff'
+  },
+  {
+    id: 5,
+    name: '我的回单',
+    icon: 'description',
+    iconColor: '#ee0a24',
+    iconBg: '#ffe6e6'
+  },
+  {
+    id: 6,
+    name: '运单开票',
+    icon: 'bill-o',
+    iconColor: '#00b42a',
+    iconBg: '#e8f9e8'
+  },
+  {
+    id: 7,
+    name: '数据统计',
+    icon: 'chart-trending-o',
+    iconColor: '#ff6b35',
+    iconBg: '#fff2e6'
+  },
+  {
+    id: 8,
+    name: '更多服务',
+    icon: 'apps-o',
+    iconColor: '#8a8a8a',
+    iconBg: '#f5f5f5'
+  }
+])
+
 // 系统功能列表
 const systemList = ref([
   {
@@ -189,7 +268,7 @@ const onUnifiedSelect = (action) => {
       store.setCurrentWorkspace('enterprise')
     }
     router.push('/enterprise/home')
-    showToast({ message: '已切换为：企业职员', duration: 2000 })
+    showToast({ message: '已切换为：企业员工', duration: 2000 })
     showUnifiedSelectorSheet.value = false
     return
   }
@@ -214,13 +293,17 @@ const onUnifiedSelect = (action) => {
 // 展示统一身份/空间的标签文案
 const getUnifiedDisplayText = () => {
   if (store.currentWorkspace === 'enterprise') {
-    return '企业职员'
+    return '企业员工'
   }
   return store.userRole === 'driver' ? '公路司机' : '水路船东'
 }
 
 const handleFunctionClick = (item) => {
   showToast(`打开功能：${item.title}`)
+}
+
+const handleServiceClick = (item) => {
+  showToast(`打开服务：${item.name}`)
 }
 
 const handleSystemClick = (item) => {
@@ -304,6 +387,20 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 
+/* 企业标签样式 */
+.enterprise-tag {
+  background-color: #e8f3ff !important;
+  color: #1989fa !important;
+  border-color: #1989fa !important;
+}
+
+/* 认证标签样式 */
+.certification-tag {
+  background-color: #f0f9ff !important;
+  color: #07c160 !important;
+  border-color: #07c160 !important;
+}
+
 
 
 .settings-btn {
@@ -338,7 +435,71 @@ onMounted(() => {
 }
 
 
-.function-section, .system-section {
+.function-section, .service-section, .system-section {
+  margin: 12px 0;
+}
+
+.function-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+/* 我的服务模块样式 */
+.service-section {
+  margin: 12px 0;
+}
+
+.service-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.service-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #323233;
+}
+
+.service-grid {
+  padding: 16px 0;
+}
+
+.service-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.service-icon:hover {
+  transform: scale(1.05);
+}
+
+/* 覆盖van-grid-item的默认样式 */
+.service-grid :deep(.van-grid-item__content) {
+  padding: 12px 8px;
+  background: transparent;
+}
+
+.service-grid :deep(.van-grid-item__text) {
+  font-size: 12px;
+  color: #646566;
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+/* 功能列表和系统功能合并模块样式 */
+.function-system-section {
   margin: 12px 0;
 }
 

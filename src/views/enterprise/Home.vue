@@ -26,15 +26,43 @@
 
     <!-- 模块二：核心功能入口区 -->
     <div class="function-section">
-      <van-grid :column-num="3" :border="false" class="function-grid">
-        <van-grid-item v-for="item in functionItems" :key="item.id" @click="handleFunctionClick(item)">
-          <div class="function-item">
-            <van-icon :name="item.icon" size="24" class="function-icon" />
+      <div class="function-scroll-container">
+        <div class="function-list">
+          <div 
+            v-for="item in functionItems" 
+            :key="item.id" 
+            class="function-item"
+            @click="handleFunctionClick(item)"
+          >
+            <van-icon :name="item.icon" size="18" class="function-icon" />
             <div class="function-title">{{ item.title }}</div>
-            <div class="function-subtitle">{{ item.subtitle }}</div>
           </div>
-        </van-grid-item>
-      </van-grid>
+        </div>
+      </div>
+    </div>
+
+    <!-- 快捷入口卡片区 -->
+    <div class="quick-entry-section">
+      <div class="quick-entry-container">
+        <div class="quick-entry-card" @click="handleQuickEntryClick('express')">
+          <div class="quick-entry-icon">
+            <van-icon name="logistics" size="24" />
+          </div>
+          <div class="quick-entry-content">
+            <div class="quick-entry-title">寄快递</div>
+            <div class="quick-entry-subtitle">一体化服务</div>
+          </div>
+        </div>
+        <div class="quick-entry-card" @click="handleQuickEntryClick('tracking')">
+          <div class="quick-entry-icon">
+            <van-icon name="search" size="24" />
+          </div>
+          <div class="quick-entry-content">
+            <div class="quick-entry-title">查物流</div>
+            <div class="quick-entry-subtitle">智能化查询</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 模块三：超级市场模块 -->
@@ -42,7 +70,7 @@
       <!-- 并排式切换标题区 -->
       <div class="market-header">
         <div class="market-title">
-          {{ activeMarket === 'source' ? '推荐运单' : '推荐运力' }}
+          {{ activeMarket === 'source' ? '推荐货源' : '推荐运力' }}
         </div>
         <div class="market-switcher">
           <van-button 
@@ -124,59 +152,37 @@
               <div class="carrier-info">
                 <div class="carrier-name">{{ carrier.name }}</div>
                 <div class="carrier-rating">
-                  <div class="rating-stars">
-                    <van-icon 
-                      v-for="star in 5" 
-                      :key="star"
-                      :name="star <= carrier.rating ? 'star' : 'star-o'"
-                      :color="star <= carrier.rating ? '#ffd700' : '#c8c9cc'"
-                      size="12"
-                    />
-                  </div>
+                  <van-rate v-model="carrier.rating" readonly size="12" />
                   <span class="rating-text">{{ carrier.rating }}分</span>
                 </div>
               </div>
               <div class="carrier-status">
-                <van-tag :type="carrier.status === 'online' ? 'success' : 'default'" size="small">
-                  {{ carrier.status === 'online' ? '在线' : '离线' }}
-                </van-tag>
+                <van-tag type="success" size="small">{{ carrier.status }}</van-tag>
               </div>
             </div>
-            
             <div class="carrier-details">
               <div class="detail-item">
-                <span class="detail-label">车辆类型：</span>
+                <span class="detail-label">车型：</span>
                 <span class="detail-value">{{ carrier.vehicleType }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">载重量：</span>
+                <span class="detail-label">载重：</span>
                 <span class="detail-value">{{ carrier.capacity }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">当前位置：</span>
-                <span class="detail-value">{{ carrier.location }}</span>
+                <span class="detail-label">距离：</span>
+                <span class="detail-value">{{ carrier.distance }}</span>
               </div>
             </div>
-            
-            <!-- 隔离容器：企业信息区 -->
-            <div class="carrier-enterprise">
-              <div class="enterprise-info">
-                <div class="enterprise-name">{{ carrier.enterpriseName }}</div>
-                <div class="enterprise-meta">
-                  <span class="meta-item">{{ carrier.enterpriseType }}</span>
-                  <span class="meta-item">{{ carrier.enterpriseScale }}</span>
-                </div>
-              </div>
-              <div class="enterprise-actions">
-                <van-button size="small" type="primary">联系企业</van-button>
-              </div>
+            <div class="carrier-actions">
+              <van-button size="small" type="primary">立即联系</van-button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 模块四：平台资讯 -->
+    <!-- 模块四：平台资讯模块 -->
     <div class="news-section">
       <div class="section-header">
         <div class="section-title">平台资讯</div>
@@ -190,13 +196,13 @@
           @click="handleNewsClick(news)"
         >
           <div class="news-content">
-            <h4 class="news-title">{{ news.title }}</h4>
-            <p class="news-summary">{{ news.summary }}</p>
+            <div class="news-title">{{ news.title }}</div>
+            <div class="news-summary">{{ news.summary }}</div>
             <div class="news-meta">
               <span class="news-time">{{ news.publishTime }}</span>
             </div>
           </div>
-          <div class="news-thumb" v-if="news.thumbnail">
+          <div v-if="news.thumbnail" class="news-thumb">
             <img :src="news.thumbnail" :alt="news.title" />
           </div>
         </div>
@@ -239,20 +245,42 @@ const functionItems = ref([
   { 
     id: 1, 
     title: '找货源', 
-    subtitle: '海量货源信息',
     icon: 'search' 
   },
   { 
     id: 2, 
-    title: '发布运力', 
-    subtitle: '快速发布运力',
-    icon: 'add-o' 
+    title: '找运力', 
+    icon: 'friends-o' 
   },
   { 
     id: 3, 
+    title: '查询轨迹', 
+    icon: 'location-o' 
+  },
+  { 
+    id: 4, 
+    title: '找政策', 
+    icon: 'description' 
+  },
+  { 
+    id: 5, 
+    title: '发布运力', 
+    icon: 'add-o' 
+  },
+  { 
+    id: 6, 
     title: '车务市场', 
-    subtitle: '车辆管理服务',
     icon: 'logistics' 
+  },
+  { 
+    id: 7, 
+    title: '结算中心', 
+    icon: 'balance-list-o' 
+  },
+  { 
+    id: 8, 
+    title: '在途监控', 
+    icon: 'eye-o' 
   }
 ])
 
@@ -361,6 +389,10 @@ const handleFunctionClick = (item) => {
   showToast(`点击：${item.title}`)
 }
 
+const handleQuickEntryClick = (type) => {
+  showToast(`点击快捷入口：${type}`)
+}
+
 const handleSourceClick = (order) => {
   showToast(`查看运单：${order.route}`)
 }
@@ -392,7 +424,7 @@ onMounted(() => {
 
 /* 模块一：轮播Banner区 */
 .banner-section {
-  margin: 16px;
+  margin: 12px 16px; /* 减少上下间距 */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -404,7 +436,7 @@ onMounted(() => {
 
 .banner-item {
   position: relative;
-  height: 160px;
+  height: 150px; /* 稍微减小高度 */
   overflow: hidden;
 }
 
@@ -421,65 +453,132 @@ onMounted(() => {
   right: 0;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   color: white;
-  padding: 20px 16px 12px;
+  padding: 16px 16px 10px; /* 减少上下内边距 */
 }
 
 .banner-overlay h3 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
+  margin: 0 0 3px 0; /* 减少底部间距 */
+  font-size: 15px; /* 稍微减小字体 */
   font-weight: 600;
 }
 
 .banner-overlay p {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px; /* 稍微减小字体 */
   opacity: 0.9;
 }
 
 /* 模块二：核心功能入口区 */
 .function-section {
-  margin: 0 16px 16px;
+  margin: 0 16px 12px; /* 减少底部间距 */
 }
 
-.function-grid {
+.function-scroll-container {
+  overflow-x: auto;
   background: white;
   border-radius: 8px;
-  padding: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* 隐藏滚动条 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.function-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.function-list {
+  display: flex;
+  gap: 8px; /* 减少功能项之间的间距 */
+  padding: 12px 16px; /* 减少上下内边距 */
+  min-width: max-content; /* 确保内容不会被压缩 */
 }
 
 .function-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
+  justify-content: center;
+  padding: 6px 8px; /* 减少内边距 */
   cursor: pointer;
+  min-width: 60px; /* 设置最小宽度 */
+  height: 60px; /* 固定高度，更加紧凑 */
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.function-item:hover {
+  background-color: #f7f8fa;
 }
 
 .function-icon {
   color: #1989fa;
-  margin-bottom: 8px;
+  margin-bottom: 4px; /* 减少图标和文字之间的间距 */
 }
 
 .function-title {
-  font-size: 14px;
+  font-size: 11px; /* 稍微减小字体 */
   font-weight: 500;
   color: #323233;
-  margin-bottom: 4px;
+  text-align: center;
+  line-height: 1.2;
 }
 
-.function-subtitle {
-  font-size: 11px;
+/* 快捷入口卡片区 */
+.quick-entry-section {
+  margin: 0 16px 12px; /* 减少底部间距 */
+  background: white;
+  border-radius: 8px;
+  padding: 12px; /* 减少内边距 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quick-entry-container {
+  display: flex;
+  gap: 10px; /* 减少卡片之间的间距 */
+}
+
+.quick-entry-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 10px; /* 减少内边距 */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-entry-card:hover {
+  background-color: #f7f8fa;
+}
+
+.quick-entry-icon {
+  margin-right: 10px; /* 减少图标和文字之间的间距 */
+  color: #1989fa;
+}
+
+.quick-entry-content {
+  flex: 1;
+}
+
+.quick-entry-title {
+  font-size: 14px; /* 稍微减小字体 */
+  font-weight: 600;
+  color: #323233;
+  margin-bottom: 2px; /* 减少底部间距 */
+}
+
+.quick-entry-subtitle {
+  font-size: 11px; /* 稍微减小字体 */
   color: #969799;
-  text-align: center;
 }
 
 /* 模块三：超级市场模块 */
 .market-section {
   background: white;
-  margin: 0 16px 16px;
+  margin: 0 16px 12px; /* 减少底部间距 */
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px; /* 减少内边距 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -487,41 +586,41 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px; /* 减少底部间距 */
 }
 
 .market-title {
-  font-size: 18px;
+  font-size: 16px; /* 稍微减小标题字体 */
   font-weight: 600;
   color: #323233;
 }
 
 .market-switcher {
   display: flex;
-  gap: 8px;
+  gap: 6px; /* 减少按钮之间的间距 */
 }
 
 .filter-section {
-  margin-bottom: 16px;
+  margin-bottom: 12px; /* 减少底部间距 */
 }
 
 .source-filter,
 .carrier-filter {
   display: flex;
-  gap: 8px;
+  gap: 6px; /* 减少标签之间的间距 */
 }
 
 /* 找货源：货物信息卡片 */
 .source-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px; /* 减少卡片之间的间距 */
 }
 
 .source-card {
   border: 1px solid #ebedf0;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px; /* 减少内边距 */
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -535,12 +634,12 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 8px; /* 减少底部间距 */
 }
 
 .source-route {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #323233;
 }
 
@@ -551,21 +650,23 @@ onMounted(() => {
 }
 
 .source-details {
-  margin-bottom: 12px;
+  margin-bottom: 10px; /* 减少底部间距 */
 }
 
 .detail-item {
+  display: flex;
+  margin-bottom: 4px; /* 减少项目之间的间距 */
   font-size: 13px;
-  color: #646566;
-  margin-bottom: 4px;
 }
 
 .detail-label {
   color: #969799;
+  min-width: 70px;
 }
 
 .detail-value {
   color: #323233;
+  font-weight: 500;
 }
 
 .source-actions {
@@ -577,13 +678,13 @@ onMounted(() => {
 .carrier-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px; /* 减少卡片之间的间距 */
 }
 
 .carrier-card {
   border: 1px solid #ebedf0;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px; /* 减少内边距 */
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -597,7 +698,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 8px; /* 减少底部间距 */
 }
 
 .carrier-info {
@@ -606,9 +707,9 @@ onMounted(() => {
 
 .carrier-name {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #323233;
-  margin-bottom: 4px;
+  margin-bottom: 4px; /* 减少底部间距 */
 }
 
 .carrier-rating {
@@ -617,18 +718,22 @@ onMounted(() => {
   gap: 4px;
 }
 
-.rating-stars {
-  display: flex;
-  gap: 1px;
-}
-
 .rating-text {
   font-size: 12px;
-  color: #646566;
+  color: #969799;
+}
+
+.carrier-status {
+  flex-shrink: 0;
 }
 
 .carrier-details {
-  margin-bottom: 12px;
+  margin-bottom: 10px; /* 减少底部间距 */
+}
+
+.carrier-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* 隔离容器：企业信息区 */
@@ -674,9 +779,9 @@ onMounted(() => {
 /* 模块四：平台资讯 */
 .news-section {
   background: white;
-  margin: 0 16px;
+  margin: 0 16px 12px; /* 减少底部间距 */
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px; /* 减少内边距 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -684,17 +789,17 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px; /* 减少底部间距 */
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 15px; /* 稍微减小标题字体 */
   font-weight: 600;
   color: #323233;
 }
 
 .more-btn {
-  font-size: 13px;
+  font-size: 12px; /* 稍微减小字体 */
   color: #1989fa;
   cursor: pointer;
 }
@@ -702,13 +807,13 @@ onMounted(() => {
 .news-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px; /* 减少新闻项之间的间距 */
 }
 
 .news-item {
   display: flex;
-  gap: 12px;
-  padding: 12px 0;
+  gap: 10px; /* 减少内容之间的间距 */
+  padding: 8px 0; /* 减少上下内边距 */
   border-bottom: 1px solid #ebedf0;
   cursor: pointer;
 }
@@ -722,17 +827,17 @@ onMounted(() => {
 }
 
 .news-title {
-  font-size: 15px;
+  font-size: 14px; /* 稍微减小字体 */
   font-weight: 500;
   color: #323233;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0; /* 减少底部间距 */
   line-height: 1.4;
 }
 
 .news-summary {
-  font-size: 13px;
+  font-size: 12px; /* 稍微减小字体 */
   color: #969799;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0; /* 减少底部间距 */
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -746,13 +851,13 @@ onMounted(() => {
 }
 
 .news-time {
-  font-size: 12px;
+  font-size: 11px; /* 稍微减小字体 */
   color: #c8c9cc;
 }
 
 .news-thumb {
-  width: 80px;
-  height: 60px;
+  width: 70px; /* 稍微减小缩略图尺寸 */
+  height: 52px; /* 保持宽高比 */
   border-radius: 4px;
   overflow: hidden;
   flex-shrink: 0;
@@ -772,10 +877,41 @@ onMounted(() => {
   
   .banner-section,
   .function-section,
+  .quick-entry-section,
   .market-section,
   .news-section {
     margin-left: 12px;
     margin-right: 12px;
+  }
+  
+  .function-list {
+    padding: 10px 12px; /* 在小屏幕上进一步减少内边距 */
+    gap: 6px; /* 在小屏幕上进一步减少间距 */
+  }
+  
+  .function-item {
+    min-width: 56px; /* 在小屏幕上稍微减小最小宽度 */
+    height: 56px; /* 在小屏幕上稍微减小高度 */
+  }
+  
+  .quick-entry-section {
+    padding: 10px; /* 在小屏幕上减少内边距 */
+  }
+  
+  .quick-entry-container {
+    gap: 8px; /* 在小屏幕上减少卡片间距 */
+  }
+  
+  .quick-entry-card {
+    padding: 8px; /* 在小屏幕上减少内边距 */
+  }
+  
+  .quick-entry-title {
+    font-size: 13px; /* 在小屏幕上稍微减小字体 */
+  }
+  
+  .quick-entry-subtitle {
+    font-size: 10px; /* 在小屏幕上稍微减小字体 */
   }
 }
 </style>
