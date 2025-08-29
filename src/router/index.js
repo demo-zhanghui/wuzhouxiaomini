@@ -2,6 +2,7 @@
  * 路由配置文件
  * 定义应用的所有路由规则和页面导航
  * 支持个人空间和企业空间的动态切换
+ * 实现延迟登录流程：默认进入企业空间首页
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
@@ -28,11 +29,12 @@ import EnterpriseMy from '@/views/enterprise/My.vue'
 /**
  * 路由配置数组
  * 包含个人空间和企业空间的路由结构
+ * 默认进入企业空间首页，实现延迟登录
  */
 const routes = [
   {
     path: '/',
-    redirect: '/login' // 默认进入登录页
+    redirect: '/enterprise/home' // 默认进入企业空间首页，实现延迟登录
   },
   {
     path: '/login',

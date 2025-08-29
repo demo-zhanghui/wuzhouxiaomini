@@ -41,30 +41,6 @@
       </div>
     </div>
 
-    <!-- 快捷入口卡片区 -->
-    <div class="quick-entry-section">
-      <div class="quick-entry-container">
-        <div class="quick-entry-card" @click="handleQuickEntryClick('express')">
-          <div class="quick-entry-icon">
-            <van-icon name="logistics" size="24" />
-          </div>
-          <div class="quick-entry-content">
-            <div class="quick-entry-title">寄快递</div>
-            <div class="quick-entry-subtitle">一体化服务</div>
-          </div>
-        </div>
-        <div class="quick-entry-card" @click="handleQuickEntryClick('tracking')">
-          <div class="quick-entry-icon">
-            <van-icon name="search" size="24" />
-          </div>
-          <div class="quick-entry-content">
-            <div class="quick-entry-title">查物流</div>
-            <div class="quick-entry-subtitle">智能化查询</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 模块三：超级市场模块 -->
     <div class="market-section">
       <!-- 并排式切换标题区 -->
@@ -148,6 +124,7 @@
             class="carrier-card"
             @click="handleCarrierClick(carrier)"
           >
+            <!-- 司机信息头部 -->
             <div class="carrier-header">
               <div class="carrier-info">
                 <div class="carrier-name">{{ carrier.name }}</div>
@@ -157,9 +134,13 @@
                 </div>
               </div>
               <div class="carrier-status">
-                <van-tag type="success" size="small">{{ carrier.status }}</van-tag>
+                <van-tag :type="carrier.status === 'online' ? 'success' : 'default'" size="small">
+                  {{ carrier.status === 'online' ? '在线' : '离线' }}
+                </van-tag>
               </div>
             </div>
+            
+            <!-- 车辆信息 -->
             <div class="carrier-details">
               <div class="detail-item">
                 <span class="detail-label">车型：</span>
@@ -174,8 +155,34 @@
                 <span class="detail-value">{{ carrier.distance }}</span>
               </div>
             </div>
-            <div class="carrier-actions">
-              <van-button size="small" type="primary">立即联系</van-button>
+            
+            <!-- 企业信息与行动按钮区域 -->
+            <div class="enterprise-action-area">
+              <!-- 左侧企业信息 -->
+              <div class="enterprise-info-group">
+                <van-image 
+                  class="enterprise-logo" 
+                  :src="carrier.logo"
+                  width="32" 
+                  height="32" 
+                  round 
+                  fit="cover"
+                />
+                
+                <div class="enterprise-text-block">
+                  <div class="enterprise-name-row">
+                    <span class="enterprise-name">{{ carrier.enterpriseName }}</span>
+                    <van-tag type="success" size="mini" class="certification-tag">已认证</van-tag>
+                  </div>
+                  <div class="enterprise-rating-row">
+                    <van-icon name="star" class="star-icon" />
+                    <span class="rating-value">{{ carrier.rating }}分</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 右侧行动按钮 -->
+              <van-button size="small" type="primary" class="action-button">立即预约</van-button>
             </div>
           </div>
         </div>
@@ -224,19 +231,19 @@ const banners = ref([
     id: 1,
     title: '新政策解读',
     subtitle: '交通运输部最新政策发布',
-    image: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop&crop=center'
   },
   {
     id: 2,
     title: '平台优化升级',
     subtitle: '全新企业工作台正式上线',
-    image: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop&crop=center'
   },
   {
     id: 3,
     title: '春节活动',
     subtitle: '新春运输保障专项活动',
-    image: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg'
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop&crop=center'
   }
 ])
 
@@ -321,10 +328,12 @@ const recommendedCarriers = ref([
     status: 'online',
     vehicleType: '厢式货车',
     capacity: '3吨',
+    distance: '2.5km',
     location: '北京市朝阳区',
     enterpriseName: '北京快运物流有限公司',
     enterpriseType: '物流企业',
-    enterpriseScale: '100-499人'
+    enterpriseScale: '100-499人',
+    logo: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=64&h=64&fit=crop&crop=center'
   },
   {
     id: 2,
@@ -333,10 +342,12 @@ const recommendedCarriers = ref([
     status: 'online',
     vehicleType: '平板车',
     capacity: '5吨',
+    distance: '5.2km',
     location: '上海市浦东新区',
     enterpriseName: '上海通达运输集团',
     enterpriseType: '运输集团',
-    enterpriseScale: '500-999人'
+    enterpriseScale: '500-999人',
+    logo: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=64&h=64&fit=crop&crop=center'
   },
   {
     id: 3,
@@ -345,10 +356,12 @@ const recommendedCarriers = ref([
     status: 'offline',
     vehicleType: '冷藏车',
     capacity: '2吨',
+    distance: '8.1km',
     location: '广州市天河区',
     enterpriseName: '广州冷链物流公司',
     enterpriseType: '专业物流',
-    enterpriseScale: '50-99人'
+    enterpriseScale: '50-99人',
+    logo: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=64&h=64&fit=crop&crop=center'
   }
 ])
 
@@ -389,9 +402,7 @@ const handleFunctionClick = (item) => {
   showToast(`点击：${item.title}`)
 }
 
-const handleQuickEntryClick = (type) => {
-  showToast(`点击快捷入口：${type}`)
-}
+
 
 const handleSourceClick = (order) => {
   showToast(`查看运单：${order.route}`)
@@ -524,54 +535,7 @@ onMounted(() => {
   line-height: 1.2;
 }
 
-/* 快捷入口卡片区 */
-.quick-entry-section {
-  margin: 0 16px 12px; /* 减少底部间距 */
-  background: white;
-  border-radius: 8px;
-  padding: 12px; /* 减少内边距 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
 
-.quick-entry-container {
-  display: flex;
-  gap: 10px; /* 减少卡片之间的间距 */
-}
-
-.quick-entry-card {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding: 10px; /* 减少内边距 */
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.quick-entry-card:hover {
-  background-color: #f7f8fa;
-}
-
-.quick-entry-icon {
-  margin-right: 10px; /* 减少图标和文字之间的间距 */
-  color: #1989fa;
-}
-
-.quick-entry-content {
-  flex: 1;
-}
-
-.quick-entry-title {
-  font-size: 14px; /* 稍微减小字体 */
-  font-weight: 600;
-  color: #323233;
-  margin-bottom: 2px; /* 减少底部间距 */
-}
-
-.quick-entry-subtitle {
-  font-size: 11px; /* 稍微减小字体 */
-  color: #969799;
-}
 
 /* 模块三：超级市场模块 */
 .market-section {
@@ -728,16 +692,33 @@ onMounted(() => {
 }
 
 .carrier-details {
-  margin-bottom: 10px; /* 减少底部间距 */
+  margin-bottom: 10px;
 }
 
-.carrier-actions {
+.detail-item {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
 }
 
-/* 隔离容器：企业信息区 */
-.carrier-enterprise {
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #969799;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #323233;
+  font-weight: 500;
+}
+
+/* 企业信息与行动按钮区域 */
+.carrier-card .enterprise-action-area {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -745,35 +726,85 @@ onMounted(() => {
   background: #f7f8fa;
   border-radius: 6px;
   border: 1px solid #ebedf0;
+  margin-top: 10px;
+  min-height: 60px;
 }
 
-.enterprise-info {
+/* 左侧企业信息组 */
+.carrier-card .enterprise-info-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 企业Logo样式 */
+.carrier-card .enterprise-logo {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* 企业文本块样式 */
+.carrier-card .enterprise-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
   flex: 1;
 }
 
-.enterprise-name {
+/* 企业名称行样式 */
+.carrier-card .enterprise-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.carrier-card .enterprise-name {
   font-size: 14px;
   font-weight: 500;
   color: #323233;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.enterprise-meta {
-  display: flex;
-  gap: 8px;
-}
-
-.meta-item {
-  font-size: 11px;
-  color: #969799;
-  background: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid #ebedf0;
-}
-
-.enterprise-actions {
+.carrier-card .certification-tag {
   flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* 评分行样式 */
+.carrier-card .enterprise-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.carrier-card .star-icon {
+  color: #ff9500;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.carrier-card .rating-value {
+  font-size: 12px;
+  color: #646566;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* 右侧行动按钮样式 */
+.carrier-card .action-button {
+  flex-shrink: 0;
+  margin-left: 12px;
+  align-self: center;
 }
 
 /* 模块四：平台资讯 */
@@ -877,7 +908,6 @@ onMounted(() => {
   
   .banner-section,
   .function-section,
-  .quick-entry-section,
   .market-section,
   .news-section {
     margin-left: 12px;
@@ -894,25 +924,7 @@ onMounted(() => {
     height: 56px; /* 在小屏幕上稍微减小高度 */
   }
   
-  .quick-entry-section {
-    padding: 10px; /* 在小屏幕上减少内边距 */
-  }
-  
-  .quick-entry-container {
-    gap: 8px; /* 在小屏幕上减少卡片间距 */
-  }
-  
-  .quick-entry-card {
-    padding: 8px; /* 在小屏幕上减少内边距 */
-  }
-  
-  .quick-entry-title {
-    font-size: 13px; /* 在小屏幕上稍微减小字体 */
-  }
-  
-  .quick-entry-subtitle {
-    font-size: 10px; /* 在小屏幕上稍微减小字体 */
-  }
+
 }
 </style>
 

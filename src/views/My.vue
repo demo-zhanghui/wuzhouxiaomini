@@ -252,11 +252,12 @@
 
     <!-- 统一切换动作面板：公路司机/水路船东/企业职员 -->
     <van-action-sheet
-      v-model:show="showUnifiedSelectorSheet"
-      :actions="unifiedActions"
-      @select="onUnifiedSelect"
-      cancel-text="取消"
+      v-model:show="showRolePicker"
       title="选择身份/空间"
+      :actions="roleActions"
+      cancel-text="取消"
+      @select="onRoleSelect"
+      class="role-picker-sheet"
     />
   </div>
 </template>
@@ -276,8 +277,8 @@ import { getDataByRole, getMileageLabel, getVehicleLabel, commonData } from '@/d
 // 路由实例
 const router = useRouter()
 
-// 统一选择器状态（公路司机/水路船东/企业职员）
-const showUnifiedSelectorSheet = ref(false)
+// 角色选择器状态
+const showRolePicker = ref(false)
 
 // 计算属性
 const currentData = computed(() => getDataByRole(store.userRole))
@@ -298,8 +299,8 @@ const orderStatusList = computed(() => [
 // 默认头像
 const defaultAvatar = 'https://cdn.jsdelivr.net/npm/@vant/assets/cat.jpeg'
 
-// 统一动作列表：水路船东、公路司机、企业职员
-const unifiedActions = computed(() => [
+// 角色动作列表：水路船东、公路司机、企业职员
+const roleActions = computed(() => [
   {
     name: '水路船东',
     value: 'shipOwner',
@@ -360,45 +361,43 @@ const getUnifiedDisplayText = () => {
 }
 
 /**
- * 显示统一选择器
+ * 显示角色选择器
  */
 const showUnifiedSelector = () => {
-  showUnifiedSelectorSheet.value = true
+  showRolePicker.value = true
 }
 
 /**
- * 处理统一选择
+ * 处理角色选择
  */
-const onUnifiedSelect = (action) => {
-  const value = action.value
-  if (value === 'enterprise') {
+const onRoleSelect = (item) => {
+  showRolePicker.value = false // 选择后立即关闭
+
+  if (item.value === 'driver' || item.value === 'shipOwner') {
+    // 更新个人空间的角色
+    if (item.value !== store.userRole && typeof store.setUserRole === 'function') {
+      store.setUserRole(item.value)
+    }
+    if (store.currentWorkspace !== 'personal') {
+      if (typeof store.switchWorkspace === 'function') {
+        store.switchWorkspace('personal')
+      } else {
+        store.setCurrentWorkspace('personal')
+      }
+    }
+    router.push('/main/paohuo')
+    const roleName = item.value === 'driver' ? '公路司机' : '水路船东'
+    showToast({ message: `已切换为：${roleName}`, duration: 2000 })
+  } else if (item.value === 'enterprise') {
+    // 切换到企业空间
     if (typeof store.switchWorkspace === 'function') {
       store.switchWorkspace('enterprise')
     } else {
       store.setCurrentWorkspace('enterprise')
     }
-    // 进入企业空间
     router.push('/enterprise/home')
     showToast({ message: '已切换为：企业职员', duration: 2000 })
-    showUnifiedSelectorSheet.value = false
-    return
   }
-
-  // 司机/船东
-  if (value !== store.userRole && typeof store.setUserRole === 'function') {
-    store.setUserRole(value)
-  }
-  if (store.currentWorkspace !== 'personal') {
-    if (typeof store.switchWorkspace === 'function') {
-      store.switchWorkspace('personal')
-    } else {
-      store.setCurrentWorkspace('personal')
-    }
-  }
-  router.push('/main/paohuo')
-  const roleName = value === 'driver' ? '公路司机' : '水路船东'
-  showToast({ message: `已切换为：${roleName}` , duration: 2000 })
-  showUnifiedSelectorSheet.value = false
 }
 
 /**
@@ -635,6 +634,8 @@ onMounted(() => {
   background: #f7f8fa;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   line-height: 1.5;
+  position: relative;
+  overflow: hidden;
 }
 
 /* 通用卡片样式 */
@@ -1083,4 +1084,49 @@ onMounted(() => {
     font-size: 15px;
   }
 }
+
+
+
+
+
+/* 角色选择动作面板样式 */
+.role-picker-sheet {
+  --van-action-sheet-max-height: 50%;
+}
+
+.role-picker-sheet .van-action-sheet__header {
+  padding: 20px 16px 16px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #323233;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.role-picker-sheet .van-action-sheet__item {
+  padding: 16px;
+  font-size: 16px;
+  color: #323233;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.role-picker-sheet .van-action-sheet__item:hover {
+  background-color: #f7f8fa;
+}
+
+.role-picker-sheet .van-action-sheet__item--disabled {
+  color: #c8c9cc;
+  cursor: not-allowed;
+}
+
+.role-picker-sheet .van-action-sheet__cancel {
+  padding: 16px;
+  font-size: 16px;
+  color: #646566;
+  background-color: #f7f8fa;
+  border-top: 8px solid #f0f0f0;
+}
+
+
 </style>

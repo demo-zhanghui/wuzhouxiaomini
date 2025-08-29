@@ -32,9 +32,7 @@
         <!-- 个人空间导航 -->
         <template v-if="isPersonalWorkspace">
           <!-- 运单 -->
-          <van-tabbar-item name="yundan" icon="notes-o">
-            运单
-          </van-tabbar-item>
+          <van-tabbar-item name="yundan" icon="notes-o" />
 
           <!-- 中心按钮：首页（跑货） -->
           <van-tabbar-item name="paohuo" class="center-tab-item">
@@ -43,25 +41,19 @@
                 <van-icon name="home-o" size="24" />
               </div>
             </template>
-            <span class="center-label">首页</span>
           </van-tabbar-item>
 
           <!-- 我的 -->
-          <van-tabbar-item name="my" icon="user-o">
-            我的
-          </van-tabbar-item>
+          <van-tabbar-item name="my" icon="user-o" />
         </template>
 
         <!-- 企业空间导航 -->
         <template v-else>
           <!-- 首页 -->
-          <van-tabbar-item name="home" icon="home-o">
-            首页
-          </van-tabbar-item>
+          <van-tabbar-item name="home" icon="home-o" />
 
           <!-- 待办 -->
           <van-tabbar-item name="todo" icon="todo-list-o">
-            待办
             <van-badge v-if="todoCount > 0" :content="todoCount" />
           </van-tabbar-item>
 
@@ -72,18 +64,13 @@
                 <van-icon name="apps-o" size="24" />
               </div>
             </template>
-            <span class="center-label">工作台</span>
           </van-tabbar-item>
 
           <!-- 应用 -->
-          <van-tabbar-item name="apps" icon="grid-o">
-            应用
-          </van-tabbar-item>
+          <van-tabbar-item name="apps" icon="apps-o" />
 
           <!-- 我的 -->
-          <van-tabbar-item name="my" icon="user-o">
-            我的
-          </van-tabbar-item>
+          <van-tabbar-item name="my" icon="user-o" />
         </template>
       </van-tabbar>
     </div>
@@ -286,26 +273,19 @@ onMounted(() => {
 
 /* 统一图标样式 */
 :deep(.van-tabbar-item__icon) {
-  color: inherit !important;
-  font-size: 20px !important;
-  margin-bottom: 2px !important;
+  font-size: 22px !important;
+  margin-bottom: 0 !important;
+  margin-top: 8px !important;
 }
 
 :deep(.van-tabbar-item__text) {
-  color: inherit !important;
-  font-size: 12px !important;
-  line-height: 1.2 !important;
-}
-
-/* 确保所有图标颜色一致 */
-:deep(.van-icon) {
-  color: inherit !important;
+  display: none !important;
 }
 
 /* 修复导航栏项目间距和对齐 */
 :deep(.van-tabbar-item) {
   flex: 1 !important;
-  padding: 5px 0 !important;
+  padding: 8px 0 !important;
   min-height: 50px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -323,10 +303,30 @@ onMounted(() => {
 }
 
 /* 统一激活状态的视觉效果 */
-:deep(.van-tabbar-item--active .van-tabbar-item__icon),
-:deep(.van-tabbar-item--active .van-tabbar-item__text) {
+:deep(.van-tabbar-item--active .van-tabbar-item__icon) {
   color: var(--primary-color) !important;
-  transform: scale(1.05);
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
+
+/* 确保图标可见性 */
+:deep(.van-tabbar-item) {
+  color: #646566 !important;
+}
+
+:deep(.van-tabbar-item--active) {
+  color: var(--primary-color) !important;
+}
+
+/* 调试：确保图标显示 */
+:deep(.van-tabbar-item__icon) {
+  display: block !important;
+  visibility: visible !important;
+}
+
+:deep(.van-icon) {
+  display: block !important;
+  visibility: visible !important;
 }
 
 /* 中心按钮容器样式 - 已在上方定义，此处移除重复 */
@@ -374,20 +374,6 @@ onMounted(() => {
   filter: blur(10px);
   opacity: 0.6;
   z-index: -1;
-}
-
-.center-label {
-  font-size: 12px !important;
-  color: #969799 !important;
-  font-weight: 400 !important;
-  margin-top: 4px;
-  transition: all 0.2s ease !important;
-}
-
-/* 中心按钮激活状态 */
-.center-tab-item.van-tabbar-item--active .center-label {
-  color: var(--primary-color) !important;
-  font-weight: 500 !important;
 }
 
 /* 工作台模态层样式 */

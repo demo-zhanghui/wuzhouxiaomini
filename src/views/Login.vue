@@ -410,15 +410,14 @@ const showAgreement = (type) => {
 onMounted(() => {
   // 已登录则直接跳转
   if (localStorage.getItem('isLoggedIn') === 'true') {
-    const userRole = localStorage.getItem('userRole') || 'driver'
+    const currentUserRole = localStorage.getItem('userRole') || 'driver'
     
     // 设置用户角色到全局状态
     if (typeof store.setUserRole === 'function') {
-      store.setUserRole(userRole)
+      store.setUserRole(currentUserRole)
     }
     
     // 根据用户角色跳转到对应空间
-    const currentUserRole = localStorage.getItem('userRole') || 'driver'
     if (currentUserRole === 'driver' || currentUserRole === 'captain') {
       // 司机和船东跳转到跑货页面
       router.replace('/main/paohuo')
@@ -660,7 +659,6 @@ onMounted(() => {
 .agreement-link {
   color: var(--primary-color);
   text-decoration: none;
-  cursor: pointer;
 }
 
 .agreement-link:hover {
